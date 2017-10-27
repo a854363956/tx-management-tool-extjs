@@ -1,5 +1,6 @@
 package tx.management.tool.extjs.utils;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,7 +80,36 @@ public class StringUtils {
         String result = "00000000000000000000000000000000"+new BigInteger(1, md.digest()).toString(16);
         return result.substring(result.length()-32, result.length());
 	}
-	
+
+	/**
+	 * 读取InputStream中的字节
+	 * @param in
+	 * @return
+	 * @throws IOException
+	 */
+	public static byte[] readInputStreamByte(InputStream in) throws IOException {
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		byte[] buffer = new byte[1024];
+		int length;
+		while ((length = in.read(buffer)) != -1) {
+		    result.write(buffer, 0, length);
+		}
+		return result.toByteArray();
+	}
+	/**
+	 * 读取BufferedReader中的字符串 
+	 * @param datas     
+	 * @return
+	 * @throws IOException
+	 */
+	public static String readBufferedReaderString(BufferedReader datas) throws IOException{
+		String result =""; 
+		String text=null;
+		while(( text =datas.readLine())!=null){
+			result+=text;
+		}
+		return result;
+	}
 	public static String getError(Throwable e){
 		StringWriter sw =null;
 		PrintWriter  pw =null; 

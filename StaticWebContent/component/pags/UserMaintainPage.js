@@ -4,11 +4,21 @@ function main(){
 	    fields: [ 'id', 'username', 'password','email','create_time','expiration_date','session_valid' ]
 	});
 	var grid = Tx.auto.TxGrid.getTxGrid({
+		items:[{
+			text : "新增数据",
+			iconCls : "fa fa-plus-circle ",
+			handler:function(){
+			}
+		}],
 		columns:[{
 			header: '', 
 			xtype: 'rownumberer',  
 			align: 'center', 
 			sortable: false 
+		},{
+			text:"数据源ID",
+			dataIndex:"id",
+			width:100,
 		},
 	    {
 	        text: '查询数据的SQL数据源',
@@ -43,7 +53,9 @@ function main(){
 	    }],
 	    sqlid:"0"
 	});
-
+	grid.addListener('rowdblclick', function(){
+		alert(1);
+	});
 	var center = Ext.Panel.create({
 		region : 'center',
 		layout:{  

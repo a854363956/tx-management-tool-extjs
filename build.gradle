@@ -52,7 +52,6 @@ dependencies {
             'commons-logging:commons-logging:1.2',
             'com.alibaba:fastjson:1.2.32',
             'mysql:mysql-connector-java:5.1.40',
-            
     )
     compile group: 'com.mchange', name: 'c3p0', version: '0.9.5.2'
 	compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.38'
