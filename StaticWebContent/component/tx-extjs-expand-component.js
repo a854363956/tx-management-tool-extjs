@@ -1,0 +1,429 @@
+(function(){
+	"use strict";
+	Ext.define("Tx.MessageBox",{
+		//定义静态方法子类不能继承
+		statics:{
+		 	error:function(message,onclick){
+                Ext.MessageBox.show({
+                    title: '系统消息',
+                    msg: message,
+                    buttons: Ext.MessageBox.OK,
+                    fn:onclick||function(){},
+                    icon: Ext.MessageBox.ERROR
+                });
+            },
+            info:function(message,onclick){
+                Ext.MessageBox.show({
+                    title: '系统消息',
+                    msg: message,
+                    buttons: Ext.MessageBox.OK,
+                    fn:onclick||function(){},
+                    icon: Ext.MessageBox.INFO
+                });
+            },
+            warning:function(message,onclick){
+                Ext.MessageBox.show({
+                    title: '系统消息',
+                    msg: message,
+                    buttons: Ext.MessageBox.OK,
+                    fn:onclick||function(){},
+                    icon: Ext.MessageBox.WARNING
+                });
+            },
+            question:function(message,onclick){
+                Ext.MessageBox.show({
+                    title: '系统消息',
+                    msg: message,
+                    buttons: Ext.MessageBox.OKCANCEL,
+                    fn:onclick||function(){},
+                    icon: Ext.MessageBox.QUESTION
+                });
+            },
+		}
+	});
+	Ext.define("Tx.data.proxy.Ajax",{
+		 alias: 'proxy.ajaxtx',
+		 extend:"Ext.data.proxy.Ajax",
+		 createRequestCallback: function(request, operation) {
+			 var sqlid = this.sqlid;
+			 var confg = request.getConfig();
+			 var params = Ext.JSON.encode(confg.params);
+			 var method = this.method || "POST";
+			 confg.method = method;
+			 confg.params={
+					 	cmd:"spring:baseSystemBusiness#fnStandardPagingQuery",
+			        	datas:$fnDesEncryption(Ext.JSON.encode({
+			        		pagingParams:params,
+			        		sqlid:sqlid
+			        	})),
+			        	request_date:""+new Date().getTime()
+			 }
+			request.setConfig(confg);
+	        return function(options, success, response) {
+	        	if(success == false ){
+	        			Tx.MessageBox.error("调用服务失败!错误码"+response.status);
+	        		return ;
+	        	}else{
+		        		var result = Ext.JSON.decode(response.responseText);
+		        		if(result.state=="RELOGIN"){
+	        			var datas={
+	        					datas:[],
+	        					count:0
+	        			}
+	        			response.responseText = Ext.JSON.encode(datas);
+	        			var me = this;
+	        			if (request === me.lastRequest) {
+	        				me.lastRequest = null;
+	        			}
+	        			
+	        			if (!me.destroying && !me.destroyed) {
+	        				me.processResponse(success, operation, request, response);
+	        			}
+	        			window.loginWindow.show();
+	        			return;
+	        		}else if(result.state=="ERROR"){
+	        			Tx.MessageBox.error(result.msg);
+	        			var datas={
+	        					datas:[],
+	        					count:0
+	        			}
+	        			response.responseText = Ext.JSON.encode(datas);
+	        			var me = this;
+	        			if (request === me.lastRequest) {
+	        				me.lastRequest = null;
+	        			}
+	        			
+	        			if (!me.destroying && !me.destroyed) {
+	        				me.processResponse(success, operation, request, response);
+	        			}
+	        			return;
+	        		}else if(result.state=="SUCCESS"){
+	        			var datatx ;
+	        			if(result.safety){
+	        				datatx = $fnDesDecrypt(result.datas);
+			        	}else{
+			        		datatx = result.datas;
+			        	}
+	        			response.responseText=datatx;
+	        			var me = this;
+	        			if (request === me.lastRequest) {
+	        				me.lastRequest = null;
+	        			}
+	        			
+	        			if (!me.destroying && !me.destroyed) {
+	        				me.processResponse(success, operation, request, response);
+	        			}
+	        		}
+	        	}
+	        };
+	    },
+	});
+
+	var key_0 ;
+	var key_1 ;
+	var key_2 ;
+	//DES加密数据
+	window.$fnDesEncryption = function(txt){
+		try {
+			if(txt == null || typeof(txt) == "undefined"){
+				return "";
+			}else{
+				return $des_encrypt(txt,Ext.util.Cookies.get("key_0"),Ext.util.Cookies.get("key_1"),Ext.util.Cookies.get("key_2"));
+			}
+		} catch (e) {
+		}
+		
+	}
+	
+	//DES解密数据
+	window.$fnDesDecrypt = function(txt){
+		try {
+			if(txt == null || typeof(txt) == "undefined"){
+				return "";
+			}else{
+				return $des_decrypt(txt,Ext.util.Cookies.get("key_0"),Ext.util.Cookies.get("key_1"),Ext.util.Cookies.get("key_2"));
+			}
+		} catch (e) {
+		}
+	}
+	Ext.define("Tx.AjaxRequest",{
+		statics:{
+			/**
+			 *  用户登入的接口
+			 *	username    帐号
+			 *  password    密码
+			 *  dom         要遮挡的dom
+			 *  callback   	登入后的回调函数
+			 */
+			fnLoginSystem:function(obj){
+				var loadMarsk = new Ext.LoadMask(obj.dom,{
+				   msg : '正在执行，请稍候......',
+				   removeMask : true// 完成后移除
+				});
+				loadMarsk.show();
+				window.GUID = function() {
+				  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+				    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+				    return v.toString(16);
+				  });
+				}
+				function randomPassword(){
+					return GUID().replace(/-/g, "").substring(0,4);
+				}
+				Tx.AjaxRequest.getPublicKey(function(encrypt){
+					key_0 = randomPassword();
+					key_1 = randomPassword();
+					key_2 = randomPassword();
+					Ext.util.Cookies.set("key_0",key_0);
+					Ext.util.Cookies.set("key_1",key_1);
+					Ext.util.Cookies.set("key_2",key_2);
+					var json = Ext.JSON.encode({
+		        		username:obj.username,
+		        		password:obj.password,
+		        		key_0:Ext.util.Cookies.get("key_0"),
+		        		key_1:Ext.util.Cookies.get("key_1"),
+		        		key_2:Ext.util.Cookies.get("key_2")
+		        	});
+					var datas =encrypt.encrypt(json);
+					Ext.Ajax.request({
+				        url: 'ExtAjaxOfJsService/Request/POST',
+				        params: {
+				        	cmd:"spring:baseSystemBusiness#fnLoginSystem",
+				        	datas:datas,
+				        	request_date:""+new Date().getTime()
+				        },
+				        method: 'POST',
+				        success: function (response, options) {
+				        	obj.callback(Ext.JSON.decode(response.responseText));
+				        	loadMarsk.hide();
+				        },
+				        failure: function (response, options) {
+				        	Tx.MessageBox.error('请求超时或网络故障,错误编号：' + response.status);
+				            loadMarsk.hide();
+				        }
+				    });
+				});
+			},
+			getPublicKey:function(callback){
+				Ext.Ajax.request({
+			        url: 'ExtAjaxOfJsService/Request/POST',
+			        params: {
+			        	cmd:"spring:baseSystemBusiness#getPublicKey",
+			        	request_date:""+new Date().getTime()
+			        },
+			        method: 'POST',
+			        success: function (response, options) {
+			        	var msg = Ext.JSON.decode(response.responseText);
+			        	var encrypt = new JSEncrypt();
+			        	encrypt.setPublicKey(msg.datas);
+			        	callback(encrypt)
+			        },
+			        failure: function (response, options) {
+			        	Tx.MessageBox.error('请求超时或网络故障,错误编号：' + response.status);
+			        }
+			    });
+			},
+			getPageCode:function(path,callback){
+				var loadMarsk = new Ext.LoadMask(_center,{
+					   msg : '正在执行，请稍候......',
+					   removeMask : true// 完成后移除
+					});
+				loadMarsk.show();
+				Ext.Ajax.request({
+			        url: path,
+			        method: 'GET',
+			        success: function (response, options) {
+			        	callback(response.responseText);
+			        	loadMarsk.hide();
+			        },
+			        failure: function (response, options) {
+			        	Tx.MessageBox.error('请求超时或网络故障,错误编号：' + response.status);
+			        	loadMarsk.hide();
+			        }
+			    });
+			},
+			/**
+			 *  cmd       要发送的地址
+			 *  parames   发送给服务器的参数
+			 *  dom       当前遮挡的dom节点
+			 *  callback  完成后的回调函数
+			 */
+			post:function(obj){
+				var loadMarsk;
+				if(obj.dom!=null){
+					loadMarsk = new Ext.LoadMask(obj.dom,{
+					   msg : '正在执行，请稍候......',
+					   removeMask : true// 完成后移除
+					});
+					loadMarsk.show();
+				}
+				
+				Ext.Ajax.request({
+			        url: 'ExtAjaxOfJsService/Request/POST',
+			        params: {
+			        	cmd:obj.cmd,
+			        	datas:$fnDesEncryption(Ext.JSON.encode(obj.datas)),
+			        	request_date:""+new Date().getTime()
+			        },
+			        method: 'POST',
+			        success: function (response, options) {
+			        	var json = Ext.JSON.decode(response.responseText);
+			        	if(json.safety){
+			        		json.datas = $fnDesDecrypt(json.datas);
+			        	}
+			        	if(json.state=="RELOGIN"){
+			        		window.loginWindow.show();
+			        	}else if(json.state=="ERROR"){
+			        		Tx.MessageBox.error(json.msg);
+			        		console.log(json.datas);
+			        	}else if(json.state=="SUCCESS"){
+			        		obj.callback(json);
+			        	}
+			        	if(obj.dom!=null){
+			        		loadMarsk.hide();
+			        	}
+			        },
+			        failure: function (response, options) {
+			        	Tx.MessageBox.error('请求超时或网络故障,错误编号：' + response.status);
+			        	if(obj.dom!=null){
+			        		loadMarsk.hide();
+			        	}
+			        }
+			    });
+			}
+		}
+	});
+	
+	Ext.define("Tx.auto.TxGrid",{
+		statics:{
+			/**
+			 * 根据配置获取TxGrid的列的信息
+			 * [
+			 * 	@parame name     对应的绑定的属性名称
+			 * 	@parame label    对应的界面的显示名称
+			 * 	@parame dataType 对应的数据类型
+			 * 				date     日期类型
+			 *              datetime 日期加上时间,更加详细的日期类型
+			 *              string   字符串类型
+			 *              number   数字类型
+			 *              double   小数类型
+			 *  @parame format   格式化字符串显示的JS脚本
+			 *  @parame editor 
+			 *              date      日期编辑器
+			 *              datetime  日期加上时间,更加详细的日期编辑器
+			 *              double    小数编辑器
+			 *              number    数字编辑器
+			 *              string    文本编辑器
+			 *              dropdown  下拉框编辑器
+			 * ]
+			 */
+			getColumns:function(obj){
+			},
+			/**
+			 * columns 列的信息
+			 * sqlid   数据库id
+			 */
+			getTxGrid:function(obj){
+				debugger;
+				var store = Tx.auto.TxGrid.getStore(obj.sqlid);
+				var grid = Ext.create('Ext.grid.Panel', {
+				    renderTo: document.body,
+				    store: store,
+				    //title: 'Application Users',
+				    plugins:['bufferedrenderer',{
+					    ptype : 'rowediting',
+					    clicksToEdit : 2,
+					    saveBtnText : '保存',
+					    autoCancel : true,
+					    errorsText : "警告",
+					    dirtyText : "当前有数据尚未保存，请选择保存或取消。",
+					    cancelBtnText : "取消",
+					}],
+				    dockedItems: [{
+					    dock : 'top',
+					    xtype : 'toolbar',
+					    items : ['->',{
+							text : "新增数据",
+							iconCls : "fa fa-plus-circle ",
+							handler:function(){
+							    //store.add({});
+							    //store.sync();
+							}
+					    }, {
+							text : "删除数据",
+							iconCls : "fa fa-times-circle",
+							handler : function() {
+								Tx.MessageBox.question("您确定要删除当前选中的数据吗？", function() {
+								var selection = grid.getView().getSelectionModel().getSelection()[0];
+									grid.store.remove(selection);
+							    });
+							}
+					    },{
+							text:"刷新数据",
+							iconCls:"fa fa-refresh",
+							handler:function(){
+							   store.load();
+							}
+					    } ]
+					},{ 
+				    		xtype: "pagingtoolbar",
+				    		store: store,
+				    		displayInfo: true,
+				    		dock:"bottom",
+				    		displayMsg: '显示第{0} - {1}条记录 / 共{2}记录',
+							emptyMsg: "没有记录",
+							items:['-','每页/',{
+								xtype:'combo',
+								editable:false,
+								width:55,
+								store:['10','20','50','100','200','500','1000'],
+								value:store.pageSize+'',
+								listeners:{
+									change:function(){
+										store.pageSize		= this.value;
+										store.reload({limit:this.value});
+									}
+								},
+							},'条记录']
+			        }],
+				    columns: obj.columns
+				});
+				return grid;
+			},
+			/**
+			 * 根据sqlid和model获取Store对象
+			 * @parame sqlid 数据库维护的唯一SQLID的编号
+			 * @parame model Ext.data.Model对象
+			 */
+			getStore:function(sqlid){
+				debugger;
+				return Ext.data.Store.create({
+					autoSync : true,
+					remoteGroup : true,
+					leadingBufferZone : 300,
+					pageSize : 50,
+					proxy : {
+					    type : 'ajaxtx',
+					    url:"ExtAjaxOfJsService/Request/POST",
+					    sqlid:sqlid,
+					    actionMethods:{read:'POST'},
+					    reader : {
+							rootProperty : 'datas',
+							totalProperty : 'count'
+					    },
+					    //simpleSortMode : true,
+					    //simpleGroupMode : true,
+					    //remoteFilter : true,
+					    //groupParam : 'sort',
+					    //groupDirectionParam : 'dir'
+					},
+					/*sorters : [ {
+					    property : 'id',
+					    direction : 'ASC'
+					} ],*/
+					autoLoad : true,
+				});
+			}
+		}
+	});
+})();
