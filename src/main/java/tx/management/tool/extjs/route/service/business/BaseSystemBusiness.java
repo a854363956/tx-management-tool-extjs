@@ -16,6 +16,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import tx.database.common.utils.TxSessionFactory;
 import tx.database.common.utils.entitys.QuerySqlResult;
+import tx.database.common.utils.string.SqlStringUtils;
 import tx.management.tool.extjs.exceptions.TxInvokingException;
 import tx.management.tool.extjs.route.service.ExtAjaxOfJsService;
 import tx.management.tool.extjs.route.service.entitys.RequestEntitys;
@@ -39,6 +40,33 @@ public class BaseSystemBusiness {
 		rsp.setMsg(ExtAjaxOfJsService.getLanguageHint("TX-000005"));
 		return rsp;
 	}
+	public String getSQLMappingSymbol(String code) throws TxInvokingException {
+		if(code == null || "".equals(code)) {
+			throw TxInvokingException.throwTxInvokingExceptions("TX-000008");
+		}else {
+			if("0".equals(code)) {
+				return " %s like ${%s} ";
+			}else if("1".equals(code)) {
+				return " %s not like ${%s} ";
+			}else if("2".equals(code)) {
+				return " %s =  ${%s} ";
+			}else if("3".equals(code)) {
+				return " %s >  ${%s} ";
+			}else if("4".equals(code)) {
+				return " %s >= ${%s} ";
+			}else if("5".equals(code)) {
+				return " %s < ${%s} ";
+			}else if("6".equals(code)) {
+				return " %s <= ${%s} ";
+			}else if("7".equals(code)) {
+				return " %s is null ";
+			}else if("8".equals(code)) {
+				return " %s is not null ";
+			}else {
+				throw TxInvokingException.throwTxInvokingExceptions("TX-000007", code);
+			}
+		}
+	}
 	
 	/**
 	 * 标准分页查询 
@@ -54,24 +82,60 @@ public class BaseSystemBusiness {
 		Integer page  = pagingParams.getInteger("page");
 		//Integer start = pagingParams.getInteger("pagingParams");
 		Integer limit = pagingParams.getInteger("limit");
-		
-		Map<String,Object> sqlparames = new HashMap<String,Object>();
-		sqlparames.put("id", sqlid);
-		List<Map<String,Object>> sqllist = txSessionFactory.getTxSession().select("select * from tx_sys_grid where id=${id}", sqlparames).getDatas();
-		if(sqllist.size() == 0) {
-			throw TxInvokingException.throwTxInvokingExceptions("TX-000006", sqlid);
+		String conditionName   =pagingParams.getString("conditionName");
+		if(conditionName!=null && !"".equals(conditionName)) {
+			if(!StringUtils.testIsEffectiveField(conditionName)) {
+				throw TxInvokingException.throwTxInvokingExceptions("TX-000009");
+			}
+			String conditionValue  =pagingParams.getString("conditionValue");
+			String conditionSymbol =getSQLMappingSymbol(pagingParams.getString("conditionSymbol"));
+			String where = String.format(conditionSymbol, conditionName,conditionName);
+			Map<String,Object> whereparames = new HashMap<String,Object>();
+			
+			if("0".equals(pagingParams.getString("conditionSymbol")) || "1".equals(pagingParams.getString("conditionSymbol"))) {
+				whereparames.put(conditionName, "%"+conditionValue+"%");
+			}else {
+				whereparames.put(conditionName, conditionValue);
+			}
+			Map<String,Object> sqlparames = new HashMap<String,Object>();
+			sqlparames.put("id", sqlid);
+			List<Map<String,Object>> sqllist = txSessionFactory.getTxSession().select("select * from tx_sys_grid where id=${id}", sqlparames).getDatas();
+			if(sqllist.size() == 0) {
+				throw TxInvokingException.throwTxInvokingExceptions("TX-000006", sqlid);
+			}else {
+				Map<String,Object> result = sqllist.get(0);
+				String sql      = (String) result.get("querysql");
+				String countsql = (String) result.get("countsql");
+				Map<String,Object> d = new HashMap<String,Object>();
+				List<Map<String,Object>> datas =txSessionFactory.getTxSession().selectPaging(String.format("select * from (%s) as ______tables where %s ", sql,where), whereparames,limit,page).getDatas();
+				Long count = (Long) txSessionFactory.getTxSession().select(String.format("%s where %s", countsql,where) , whereparames).getDatas().get(0).get("count");
+				d.put("count", count);
+				d.put("datas", datas);
+				rep.setDatas(JSON.toJSONString(d));
+				return rep;
+			}
+			
 		}else {
-			Map<String,Object> result = sqllist.get(0);
-			String sql      = (String) result.get("sql");
-			String countsql = (String) result.get("countsql");
-			Map<String,Object> d = new HashMap<String,Object>();
-			List<Map<String,Object>> datas =txSessionFactory.getTxSession().selectPaging(sql, null,limit,page).getDatas();
-			Long count = (Long) txSessionFactory.getTxSession().select(countsql, null).getDatas().get(0).get("count");
-			d.put("count", count);
-			d.put("datas", datas);
-			rep.setDatas(JSON.toJSONString(d));
-			return rep;
+			Map<String,Object> sqlparames = new HashMap<String,Object>();
+			sqlparames.put("id", sqlid);
+			List<Map<String,Object>> sqllist = txSessionFactory.getTxSession().select("select * from tx_sys_grid where id=${id}", sqlparames).getDatas();
+			if(sqllist.size() == 0) {
+				throw TxInvokingException.throwTxInvokingExceptions("TX-000006", sqlid);
+			}else {
+				Map<String,Object> result = sqllist.get(0);
+				String sql      = (String) result.get("querysql");
+				String countsql = (String) result.get("countsql");
+				Map<String,Object> d = new HashMap<String,Object>();
+				List<Map<String,Object>> datas =txSessionFactory.getTxSession().selectPaging(sql, null,limit,page).getDatas();
+				Long count = (Long) txSessionFactory.getTxSession().select(countsql, null).getDatas().get(0).get("count");
+				d.put("count", count);
+				d.put("datas", datas);
+				rep.setDatas(JSON.toJSONString(d));
+				return rep;
+			}
 		}
+		
+		
 	}
 	/**
 	 * 获取当前维护的所有方言的key 和 value
@@ -165,3 +229,4 @@ public class BaseSystemBusiness {
 		return rp;
 	}
 }
+

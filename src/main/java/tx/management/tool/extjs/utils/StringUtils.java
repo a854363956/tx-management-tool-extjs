@@ -14,6 +14,7 @@ import tx.database.common.utils.string.SqlStringUtils;
 
 public class StringUtils {
 	private static String cmd = "^[a-zA-Z0-9_]+:[a-zA-Z0-9_]+#[a-zA-Z0-9_]+$";
+	private static String field="^[a-zA-Z0-9_]+$";
 	private static final String PRIVATE_PASSWORD = "a756268d-68d6-434e-9864-900186b96d51";
 	/**
 	 * 判断当前的Cmd字符串是否符合规则,如果符合返回true 否则返回false
@@ -22,6 +23,19 @@ public class StringUtils {
 	 */
 	public static boolean testCmdString(String cmd) {
 		List<String> result = SqlStringUtils.findRegex(cmd,StringUtils.cmd );
+		if(result.size() != 0) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+	/**
+	 * 判断当前字符串是否是合法的字段名称
+	 * @param field  字段名称
+	 * @return       如果是有效的字段名称将返回true否则返回false
+	 */
+	public static boolean testIsEffectiveField(String field) {
+		List<String> result = SqlStringUtils.findRegex(field,StringUtils.field );
 		if(result.size() != 0) {
 			return true;
 		}else {

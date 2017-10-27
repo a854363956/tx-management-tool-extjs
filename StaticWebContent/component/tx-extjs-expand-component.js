@@ -322,15 +322,90 @@
 			/**
 			 * columns 列的信息
 			 * sqlid   数据库id
+			 * items   工具栏元素
 			 */
 			getTxGrid:function(obj){
-				debugger;
+				var columns = obj.columns;
+				var queryname= new Array();
+				var defaultValue;
+				for(var i=0;i<columns.length;i++){
+					if(columns[i].xtype != "rownumberer"){
+						queryname.push([columns[i].dataIndex,columns[i].text]);
+						defaultValue=columns[i].dataIndex;
+					}
+				}
 				var store = Tx.auto.TxGrid.getStore(obj.sqlid);
+				
+				var conditionName=defaultValue;
+				var conditionValue="";
+				var conditionSymbol="0";
+				var items=new Array();
+				items.push({
+					xtype:'combo',
+					editable:false,
+					store:queryname,
+					value:defaultValue,
+					listeners:{
+						change:function(){
+							conditionName=this.value;
+						}
+					},
+				});
+				items.push({
+					xtype:'combo',
+					editable:false,
+					width:85,
+					store:[
+						['0','包含'],
+						['1','不包含'],
+						['2','等于'],
+						['3','大于'],
+						['4','大于等于'],
+						['5','小于'],
+						['6','小于等于'],
+						['7','为空'],
+						['8','不为空']
+					],
+					value:"0",
+					listeners:{
+						change:function(){
+							conditionSymbol=this.value;
+						}
+					},
+				});
+				items.push({
+					xtype : 'textfield',
+					listeners:{
+						change:function(){
+							conditionValue=this.value;
+						}
+					}	
+				});
+				items.push("-")
+				items.push({
+					text : "查询数据",
+					iconCls:"fa fa-search",
+					handler:function(){
+						var proxy = store.getProxy();
+						proxy.setExtraParams({
+							"conditionName":conditionName,
+							"conditionValue":conditionValue,
+							"conditionSymbol":conditionSymbol,
+						});
+						store.load();
+					}
+				});
+				items.push("-")
+				items.push("->");
+				var items_ = obj.items || [];
+				for(var i=0;i<items_.length;i++){
+					items.push(items_[i]);
+				}
 				var grid = Ext.create('Ext.grid.Panel', {
 				    renderTo: document.body,
 				    store: store,
 				    //title: 'Application Users',
-				    plugins:['bufferedrenderer',{
+				    plugins:['bufferedrenderer'/*,{
 					    ptype : 'rowediting',
 					    clicksToEdit : 2,
 					    saveBtnText : '保存',
@@ -338,11 +413,11 @@
 					    errorsText : "警告",
 					    dirtyText : "当前有数据尚未保存，请选择保存或取消。",
 					    cancelBtnText : "取消",
-					}],
+					}*/],
 				    dockedItems: [{
 					    dock : 'top',
-					    xtype : 'toolbar',
-					    items : ['->',{
+					    xtype :'toolbar',
+					    items :items/*['->',{
 							text : "新增数据",
 							iconCls : "fa fa-plus-circle ",
 							handler:function(){
@@ -364,7 +439,7 @@
 							handler:function(){
 							   store.load();
 							}
-					    } ]
+					    } ]*/
 					},{ 
 				    		xtype: "pagingtoolbar",
 				    		store: store,
@@ -396,7 +471,6 @@
 			 * @parame model Ext.data.Model对象
 			 */
 			getStore:function(sqlid){
-				debugger;
 				return Ext.data.Store.create({
 					autoSync : true,
 					remoteGroup : true,
