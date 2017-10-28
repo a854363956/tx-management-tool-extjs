@@ -323,6 +323,7 @@
 			 * columns 列的信息
 			 * sqlid   数据库id
 			 * items   工具栏元素
+			 * queryname 默认显示的查询字段
 			 */
 			getTxGrid:function(obj){
 				var columns = obj.columns;
@@ -331,7 +332,7 @@
 				for(var i=0;i<columns.length;i++){
 					if(columns[i].xtype != "rownumberer"){
 						queryname.push([columns[i].dataIndex,columns[i].text]);
-						defaultValue=columns[i].dataIndex;
+						defaultValue=obj.queryname || columns[i].dataIndex;
 					}
 				}
 				var store = Tx.auto.TxGrid.getStore(obj.sqlid);

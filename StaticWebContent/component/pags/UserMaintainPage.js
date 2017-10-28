@@ -17,7 +17,13 @@ function main(){
 	    	},"-",{
 	    		xtype: 'button',
 	    		iconCls:"fa fa-leaf",
-	    		text: '美化SQL语句' 
+	    		text: '美化SQL语句',
+	    		handler:function(){
+	    			var datas = Ext.getCmp("_usermaintainpage_form").getForm().getValues();
+	    			datas.querysql =sqlFormatter.format(datas.querysql);
+	    			datas.countsql =sqlFormatter.format(datas.countsql);
+	    			Ext.getCmp("_usermaintainpage_form").getForm().setValues(datas);
+	    		}
 	    	},"-",{
 	    		xtype:"button",
 	    		iconCls:"fa fa-bug",
@@ -113,6 +119,7 @@ function main(){
 	    }]
 	});
 	var grid = Tx.auto.TxGrid.getTxGrid({
+		queryname:"description",
 		items:[{
 			text : "新增数据",
 			iconCls : "fa fa-plus-circle ",
