@@ -373,12 +373,23 @@
 						}
 					},
 				});
+				function queryDatas(){
+					var proxy = store.getProxy();
+					proxy.setExtraParams({
+						"conditionName":conditionName,
+						"conditionValue":conditionValue,
+						"conditionSymbol":conditionSymbol,
+					});
+					store.load();
+				}
 				items.push({
 					xtype : 'textfield',
 					listeners:{
 						change:function(){
 							conditionValue=this.value;
-						}
+							queryDatas();
+						},
+						
 					}	
 				});
 				items.push("-")
@@ -386,13 +397,7 @@
 					text : "查询数据",
 					iconCls:"fa fa-search",
 					handler:function(){
-						var proxy = store.getProxy();
-						proxy.setExtraParams({
-							"conditionName":conditionName,
-							"conditionValue":conditionValue,
-							"conditionSymbol":conditionSymbol,
-						});
-						store.load();
+						queryDatas();
 					}
 				});
 				items.push("-")

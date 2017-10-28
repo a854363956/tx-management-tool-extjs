@@ -81,7 +81,7 @@ public class ExtAjaxOfJsService extends HttpServlet{
 				re.setState("SUCCESS");
 
 				if((Integer)r.get("safety") == 1) {
-					re.setDatas(des.Encrypt(re.getDatas(), key_0, key_1, key_2));
+					re.setDatas(des.Encrypt(re.getDatas() == null ? "" : re.getDatas(), key_0, key_1, key_2));
 					re.setSafety(true);
 				}else {
 					re.setSafety(false);
