@@ -1,5 +1,11 @@
 (function(){
 	"use strict";
+	window.GUID = function() {
+		  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+		    return v.toString(16);
+		  });
+	}
 	Ext.define("Tx.MessageBox",{
 		//定义静态方法子类不能继承
 		statics:{
@@ -50,13 +56,26 @@
 			 var params = Ext.JSON.encode(confg.params);
 			 var method = this.method || "POST";
 			 confg.method = method;
-			 confg.params={
-					 	cmd:"spring:baseSystemBusiness#fnStandardPagingQuery",
-			        	datas:$fnDesEncryption(Ext.JSON.encode({
-			        		pagingParams:params,
-			        		sqlid:sqlid
-			        	})),
-			        	request_date:""+new Date().getTime()
+			 if(confg.action == "read"){
+				 confg.params={
+						 	cmd:"spring:baseSystemBusiness#fnStandardPagingQuery",
+				        	datas:$fnDesEncryption(Ext.JSON.encode({
+				        		pagingParams:params,
+				        		sqlid:sqlid
+				        	})),
+				        	request_date:""+new Date().getTime()
+				 }
+			 }else{
+				 confg.params={
+						 	cmd:"spring:baseSystemBusiness#fnStandardPagingSave",
+				        	datas:$fnDesEncryption(Ext.JSON.encode({
+				        		pagingParams:params,
+				        		sqlid:sqlid,
+				        		action:confg.action,
+				        		jsonData:confg.jsonData
+				        	})),
+				        	request_date:""+new Date().getTime()
+				 }
 			 }
 			request.setConfig(confg);
 	        return function(options, success, response) {
@@ -161,12 +180,7 @@
 				   removeMask : true// 完成后移除
 				});
 				loadMarsk.show();
-				window.GUID = function() {
-				  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-				    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
-				    return v.toString(16);
-				  });
-				}
+				
 				function randomPassword(){
 					return GUID().replace(/-/g, "").substring(0,4);
 				}
@@ -293,7 +307,65 @@
 			}
 		}
 	});
-	
+	/**
+	 * mode 高亮代码的方式
+	 * 
+	 */
+	Ext.define("Tx.field.SQLTextArea",{
+		xtype: 'sqltextarea',
+		extend:"Ext.form.TextArea",
+		setValue:function(txt){
+			var editor = this.editor || null;
+			if(editor == null){
+				this._initValue=txt;
+			}else{
+				this.editor.setValue(txt);
+			}
+		},
+		getSubmitData:function(){
+			var result = {};
+			result[this.name] = this.getValue();
+			return result;
+		},
+		getValue:function(){
+			var editor = this.editor || null;
+			if(editor == null){
+				return this._initValue;
+			}else{
+				return editor.getValue();
+			}
+		},
+		listeners:{
+			afterrender :function( self, eOpts){
+				Ext.require("component.libs.codemirror.mode.sql.sql");
+				setTimeout(function(){
+					var width = $("#"+self.id+"-inputEl").width();
+					var height = $("#"+self.id+"-inputEl").height();
+					self.editor = CodeMirror.fromTextArea(Ext.getDom(self.id+"-inputEl"), {
+					    mode: "text/x-sql",
+					    indentWithTabs: true,
+					    smartIndent: true,
+					    lineNumbers: true,
+					    matchBrackets : true,
+/*					    autofocus: true,
+					    extraKeys: {"Ctrl-Space": "autocomplete"},
+					    hintOptions: {tables: {
+					      users: ["name", "score", "birthDate"],
+					      countries: ["name", "population", "size"]
+					    }}*/
+				   });
+				   self.editor.setSize(width,height);
+				   self.editor.setValue(self._initValue);
+				   /*self.editor.on("change",function(self_,arg){
+					   	self.setValue(self_.getValue());
+					});
+				   self.editor.setValue(self.getValue());*/
+				},300);
+				
+			}
+		},
+		
+	});
 	Ext.define("Tx.auto.TxGrid",{
 		statics:{
 			/**
@@ -324,6 +396,7 @@
 			 * sqlid   数据库id
 			 * items   工具栏元素
 			 * queryname 默认显示的查询字段
+			 * height   表格的高度
 			 */
 			getTxGrid:function(obj){
 				var columns = obj.columns;
@@ -407,19 +480,21 @@
 				for(var i=0;i<items_.length;i++){
 					items.push(items_[i]);
 				}
-				var grid = Ext.create('Ext.grid.Panel', {
-				    renderTo: document.body,
+				var config = {
 				    store: store,
 				    //title: 'Application Users',
 				    plugins:['bufferedrenderer'/*,{
 					    ptype : 'rowediting',
-					    clicksToEdit : 2,
+					    clicksToEdit : 3,
 					    saveBtnText : '保存',
 					    autoCancel : true,
 					    errorsText : "警告",
 					    dirtyText : "当前有数据尚未保存，请选择保存或取消。",
 					    cancelBtnText : "取消",
-					}*/],
+					}*/,{
+						ptype: 'cellediting',
+				        clicksToEdit: 1
+					}],
 				    dockedItems: [{
 					    dock : 'top',
 					    xtype :'toolbar',
@@ -468,7 +543,12 @@
 							},'条记录']
 			        }],
 				    columns: obj.columns
-				});
+				}
+				var height = obj.height || null;
+				if(height!=null){
+					config.height=obj.height;
+				}
+				var grid = Ext.create('Ext.grid.Panel', config);
 				return grid;
 			},
 			/**

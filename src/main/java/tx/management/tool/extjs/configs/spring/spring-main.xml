@@ -20,7 +20,6 @@
 		 <constructor-arg>
 		 	<map>
 		 		<entry key="DBType" value="mysql"></entry>
-		 		
 		 		<entry key="jdbcUrl" value="jdbc:mysql://localhost:3306/tx?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true"></entry>
 		 		<entry key="user" value="tx"></entry>
 		 		<entry key="password" value="tx"></entry>

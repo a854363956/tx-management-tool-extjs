@@ -23,11 +23,32 @@ import tx.management.tool.extjs.route.service.entitys.RequestEntitys;
 import tx.management.tool.extjs.route.service.entitys.ResponseEntitys;
 import tx.management.tool.extjs.utils.RSA;
 import tx.management.tool.extjs.utils.StringUtils;
-
+/**
+ * 系统需要运行的业务类
+ * @author 张尽
+ * @email  zhangjin0908@hotmail.com
+ * @qq     854363956
+ * @date 2017年10月30日 下午3:05:20
+ */
 @Controller
 public class BaseSystemBusiness {
 	@Resource(name="TxSessionFactory")
 	private TxSessionFactory txSessionFactory;
+	
+	/**
+	 * 根据SQL生成字段信息
+	 * @param re  
+	 * @return
+	 * @throws SQLException 
+	 */
+	public ResponseEntitys fnGenerateFieldInformation(RequestEntitys re) throws SQLException {
+		JSONObject j = JSON.parseObject(re.getDatas());
+		String sql =j.getString("sql");
+		ResponseEntitys rpe = new ResponseEntitys();
+		rpe.setDatas(JSON.toJSONString(txSessionFactory.getTxSession().selectPaging(sql, null,0,1)));
+		return rpe;
+	}
+	
 	/**
 	 * 用户退出登入
 	 * @param re
@@ -40,6 +61,7 @@ public class BaseSystemBusiness {
 		rsp.setMsg(ExtAjaxOfJsService.getLanguageHint("TX-000005"));
 		return rsp;
 	}
+	
 	public String getSQLMappingSymbol(String code) throws TxInvokingException {
 		if(code == null || "".equals(code)) {
 			throw TxInvokingException.throwTxInvokingExceptions("TX-000008");
@@ -66,6 +88,15 @@ public class BaseSystemBusiness {
 				throw TxInvokingException.throwTxInvokingExceptions("TX-000007", code);
 			}
 		}
+	}
+	/**
+	 * 标准分页的保存
+	 * @param re
+	 * @return
+	 */
+	public ResponseEntitys fnStandardPagingSave(RequestEntitys re) {
+		
+		return null;
 	}
 	
 	/**

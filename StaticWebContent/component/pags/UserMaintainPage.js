@@ -1,9 +1,63 @@
 function main(){
+	var grid_columns= Tx.auto.TxGrid.getTxGrid({
+/*		items:[{
+			text : "保存修改",
+			iconCls : "fa fa-floppy-o",
+			handler:function(){
+			}
+		}],*/
+		queryname:"name",
+		columns:[{
+			header: '', 
+			xtype: 'rownumberer',  
+			align: 'center', 
+			sortable: false 
+		},{
+			text:"字段ID",
+			width:230,
+			dataIndex:"id",
+		},
+	    {
+	        text: '字段名称',
+	        flex: 1,
+	        dataIndex: 'name',
+	        editor:{
+	        	xtype:"textfield",
+	        }
+	    },
+	    {
+	        text: '字段类型',
+	        flex: 2,
+	        dataIndex: 'datatype'
+	    },
+	    {
+	        text: '列的宽度',
+	        flex: 1,
+	        dataIndex: 'width',
+	    },
+	    {
+	        text: '是否只读',
+	        flex: 1,
+	        dataIndex: 'isready',
+	    },{
+	        text: '强制显示名称',
+	        flex: 2,
+	        dataIndex: 'forcedlabel',
+	        
+	    }],
+	    sqlid:"1"
+	});
+	
+/*	grid_columns.store.addListener("write",function(store, operation, eOpts){
+		debugger;
+	});
+	*/
+	
 	var addData=  Ext.Window.create({
-		title : "新增SQL数据源",
+		title : "SQL数据源",
 	    closable : false,
 	    width : "70%",
-	    height : "88%",
+	    height : "92%",
 	    resizable : false, // 窗口可拖动改变大小;
 	    modal : true, // 设置弹窗之后屏蔽掉页面上所有的其他组件;
 	    plain : true, // 使窗体主体更融于框架颜色;
@@ -13,7 +67,32 @@ function main(){
 	    	items:[{
 	    		xtype: 'button',
 	    		iconCls:"fa fa-hand-pointer-o",
-	    		text: '生成列的字段信息' 
+	    		text: '初始化字段信息',
+	    		handler:function(){
+	    			Tx.MessageBox.question("是否确认重新初始化字段信息,新增字段会添加,以前字段信息不变,如果没有则重新生成,是否继续?",function(){
+	    				Tx.AjaxRequest.post({
+		    				cmd:"spring:baseSystemBusiness#fnGenerateFieldInformation",
+		    				datas:{
+		    					sql:Ext.getCmp("_usermaintainpage_form").getForm().getValues().querysql
+		    				},
+		    				dom:addData,
+		    				callback:function(result){
+		    					var querySqlResultTableColumns=Ext.JSON.decode(result.datas).querySqlResultTableColumns;
+		    					var addDatas = new Array();
+		    					for(var i=0;i<querySqlResultTableColumns.length;i++){
+		    						var data = querySqlResultTableColumns[i];
+		    						addDatas.push({
+		    							//id:window.GUID().replace(/-/g, ""),
+		    							datatype:data.columnTypeName,
+		    							name:data.columnLabel,
+		    						});
+		    					}
+		    					grid_columns.store.add(addDatas);
+		    					self.disable();
+		    				}
+		    			});
+	    			});
+	    		}
 	    	},"-",{
 	    		xtype: 'button',
 	    		iconCls:"fa fa-leaf",
@@ -24,11 +103,11 @@ function main(){
 	    			datas.countsql =sqlFormatter.format(datas.countsql);
 	    			Ext.getCmp("_usermaintainpage_form").getForm().setValues(datas);
 	    		}
-	    	},"-",{
+	    	},"-"/*,{
 	    		xtype:"button",
 	    		iconCls:"fa fa-bug",
 	    		text:"测试SQL语句"
-	    	}]
+	    	}*/]
 	    }],
 	    items:[{
 	    	xtype:"form",
@@ -64,6 +143,19 @@ function main(){
 	    			 	name:"updatetime",
 	    			 	readOnly:true
 	    		 },{
+	    			    fieldLabel : '单表表名',
+	    			 	name:"",
+	    		 },{
+	    			 	fieldLabel : '创建方法',
+	    			 	name:"",
+	    		 },{
+	    			    fieldLabel : '修改方法',
+	    			 	name:"",
+	    		 },{
+	    			    fieldLabel : '删除方法',
+	    			 	name:"",
+	    			 	
+	    		 },{
 	    			 	xtype : 'fieldset',
 					    title : '查询SQL数据源',
 					    collapsible : false,
@@ -71,7 +163,7 @@ function main(){
 					    autoWidth : true,
 					    colspan:2,
 					    items:[{
-					    	xtype:"textareafield",
+					    	xtype:"sqltextarea",
 					    	name:"querysql",
 					    	width:"100%",
 					    	height:200,
@@ -84,7 +176,7 @@ function main(){
 					    autoWidth : true,
 					    colspan:2,
 					    items:[{
-					    	xtype:"textareafield",
+					    	xtype:"sqltextarea",
 					    	name:"countsql",
 					    	width:"100%",
 					    	height:200,
@@ -97,6 +189,16 @@ function main(){
 					    autoWidth : true,
 					    height:220,
 					    colspan:4,
+						layout:{  
+					        type:'hbox',  
+					        align : 'stretch',  
+					        pack  : 'start'  
+					    },  
+					    defaults:{  
+				        //子元素平均分配宽度  
+				           flex:1  
+					    }, 
+					    items:[grid_columns]
 	    		 }]
 		    }]
 	    }],
@@ -118,6 +220,8 @@ function main(){
 	    	}
 	    }]
 	});
+	
+
 	var grid = Tx.auto.TxGrid.getTxGrid({
 		queryname:"description",
 		items:[{

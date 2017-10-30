@@ -3,8 +3,10 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Tx 系统管理中心</title>
+	<!-- jquery框架方便操作Dom -->
+	<script src="https://cdn.bootcss.com/jquery/1.10.2/jquery.min.js"></script>
 	<!-- font-awesome图标 -->
-	<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"/>
 	<!-- Extjs 灰色皮肤 -->
 	<link href="component/extjs/build/classic/theme-gray/resources/theme-gray-all.css" rel="stylesheet" type="text/css" />
 	<!-- Extjs核心全部控件 -->
@@ -18,6 +20,9 @@
 	<script type="text/javascript" src="component/libs/des.js"></script>
 	<!-- SQL格式化工具类 -->
 	<script type="text/javascript" src="component/libs/sql-formatter.min.js"></script>
+	<!-- codemirror 源码编辑工具 -->
+	<link  rel="stylesheet" type="text/css" href="component/libs/codemirror/codemirror.css"/>
+	<script type="text/javascript" src="component/libs/codemirror/codemirror.js"></script>
 </head>
 <body>
 	<script type="text/javascript">
@@ -85,7 +90,7 @@
 		        region : 'center',
 		        id:"_center",
 		        activeTab : 0,
-		        items : []
+		        items : [],
 		    });
 			window.view = Ext.Viewport.create({
 				id : "view",
@@ -141,7 +146,7 @@
 									collapsible : true,
 									hideHeaders : true,
 									listeners:{
-										beforecelldblclick:function( self, td, cellIndex, record, tr, rowIndex, e, eOpts){
+										beforecelldblclick :function( self, td, cellIndex, record, tr, rowIndex, e, eOpts){
 											if(record.data.datas.leaf !=0){
 												var path = record.data.datas.path;
 												Tx.AjaxRequest.getPageCode(path,function(txt){
@@ -284,7 +289,6 @@
 								enableKeyEvents : true,
 								listeners : {
 								    keyup : function(self, e) {
-											debugger;
 										if (e.getKey() === Ext.event.Event.ENTER) {
 											fnLoginSystem();
 										}
