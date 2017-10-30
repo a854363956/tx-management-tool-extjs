@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 
 import tx.database.common.utils.TxSessionFactory;
 import tx.database.common.utils.entitys.QuerySqlResult;
@@ -93,12 +94,80 @@ public class BaseSystemBusiness {
 	 * 标准分页的保存
 	 * @param re
 	 * @return
+	 * @throws TxInvokingException 
+	 * @throws SQLException 
 	 */
-	public ResponseEntitys fnStandardPagingSave(RequestEntitys re) {
+	public ResponseEntitys fnStandardPagingSave(RequestEntitys re) throws TxInvokingException, SQLException {
+		JSONObject j    = JSON.parseObject(re.getDatas());
+		String action   = j.getString("action");
+		String sqlid    = j.getString("sqlid");
+		List<Map<String,Object>> jsonData = JSON.parseObject(j.getString("jsonData"),new TypeReference<List<Map<String,Object>>>(){});
 		
-		return null;
+		Map<String,Object> sqlparames = new HashMap<String,Object>();
+		sqlparames.put("id", sqlid);
+		QuerySqlResult qsr = txSessionFactory.getTxSession().select("select * from tx_sys_grid where id=${id}", sqlparames);
+		List<Map<String,Object>> sqliddatas = qsr.getDatas();
+		if(sqliddatas.size() == 0) {
+			throw TxInvokingException.throwTxInvokingExceptions("TX-000006",sqlid);
+		}else {
+			Map<String,Object> sqldata = sqliddatas.get(0);
+			if("create".equals(action)) { // 新增
+				Object  fncreate = sqldata.get("fncreate");
+				ResponseEntitys rpe = new ResponseEntitys();
+				if(fncreate == null) {
+					int number = create(sqldata,jsonData);
+					rpe.setDatas(""+number);
+				}else {
+					int number =create((String)fncreate,sqldata,jsonData);
+					rpe.setDatas(""+number);
+				}
+				return rpe;
+			}else if ("update".equals(action)) { //修改
+				Object  fnupdate = sqldata.get("fnupdate");
+				ResponseEntitys rpe = new ResponseEntitys();
+				if(fnupdate == null) {
+					int number = update(sqldata,jsonData);
+					rpe.setDatas(""+number);
+				}else {
+					int number =update((String)fnupdate,sqldata,jsonData);
+					rpe.setDatas(""+number);
+				}
+				return rpe;
+				
+			}else if ("destroy".equals(action)) { //删除
+				Object  fndelete = sqldata.get("fndelete");
+				ResponseEntitys rpe = new ResponseEntitys();
+				if(fndelete == null) {
+					int number = destroy(sqldata,jsonData);
+					rpe.setDatas(""+number);
+				}else {
+					int number =destroy((String)fndelete,sqldata,jsonData);
+					rpe.setDatas(""+number);
+				}
+				return rpe;
+			}else {
+				throw TxInvokingException.throwTxInvokingExceptions("TX-000010",action);
+			}
+		}
 	}
-	
+	private int create(String path,Map<String,Object> sqlid,List<Map<String,Object>> jsonData) {
+		return 0;
+	}
+	private int create(Map<String,Object> sqlid,List<Map<String,Object>> jsonData) {
+		return 0;
+	}
+	private int update(String path,Map<String,Object> sqlid,List<Map<String,Object>> jsonData) {
+		return 0;
+	}
+	private int update(Map<String,Object> sqlid,List<Map<String,Object>> jsonData) {
+		return 0;
+	}
+	private int destroy(String path,Map<String,Object> sqlid,List<Map<String,Object>> jsonData) {
+		return 0;
+	}
+	private int destroy(Map<String,Object> sqlid,List<Map<String,Object>> jsonData) {
+		return 0;
+	}
 	/**
 	 * 标准分页查询 
 	 * @param re          

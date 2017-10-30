@@ -1,11 +1,13 @@
 function main(){
 	var grid_columns= Tx.auto.TxGrid.getTxGrid({
-/*		items:[{
+		items:[{
 			text : "保存修改",
 			iconCls : "fa fa-floppy-o",
 			handler:function(){
-			}
-		}],*/
+				var selection = grid_columns.getView().getSelectionModel().getSelection()[0];
+				grid_columns.store.remove(selection);
+		    }
+		}],
 		queryname:"name",
 		columns:[{
 			header: '', 

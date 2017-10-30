@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -120,18 +121,28 @@ public class ExtAjaxOfJsService extends HttpServlet{
 			}
 		}
 	}
-	
+	public static Map<String,String> resolvePath(String path) {
+		String res[] = path.split(":");
+		String[] clazzs = res[1].split("#");
+		String type =res[0];
+		String bean = clazzs[0];
+		String method = clazzs[1];
+		Map<String,String> result = new HashMap<String,String>();
+		result.put("type", type);
+		result.put("bean", bean);
+		result.put("method", method);
+		return result;
+	}
 	private Object invokingCmd(RequestEntitys req) throws TxInvokingException, ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		String cmd = req.getCmd();
 		if(cmd == null || "".equals(cmd)) {
 			throw TxInvokingException.throwTxInvokingExceptions("TX-000000");
 		}else {
 			if(StringUtils.testCmdString(cmd)) {
-				String res[] = cmd.split(":");
-				String[] clazzs = res[1].split("#");
-				String type =res[0];
-				String bean = clazzs[0];
-				String method = clazzs[1];
+				Map<String,String> cmd_resolve = resolvePath(cmd);
+				String type =cmd_resolve.get("type");
+				String bean = cmd_resolve.get("bean");
+				String method =cmd_resolve.get("method");
 				if(CmdService.exist(type)) {
 					if(type.equalsIgnoreCase(CmdService.java.getValue())) {
 						@SuppressWarnings("rawtypes")
