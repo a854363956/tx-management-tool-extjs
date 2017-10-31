@@ -133,6 +133,7 @@ public class ExtAjaxOfJsService extends HttpServlet{
 		result.put("method", method);
 		return result;
 	}
+
 	private Object invokingCmd(RequestEntitys req) throws TxInvokingException, ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		String cmd = req.getCmd();
 		if(cmd == null || "".equals(cmd)) {

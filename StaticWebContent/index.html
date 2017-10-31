@@ -27,6 +27,8 @@
 <body>
 	<script type="text/javascript">
 		Ext.onReady(function () {
+			var tabscript ={};
+			
 			var isInitTreeMenu=false;
 			var top = Ext.toolbar.Toolbar.create({
 				region : "north",
@@ -89,8 +91,11 @@
 			window._center = new Ext.TabPanel({
 		        region : 'center',
 		        id:"_center",
-		        activeTab : 0,
+		        //activeTab : 0,
 		        items : [],
+		        listeners:{
+		        	
+		        }
 		    });
 			window.view = Ext.Viewport.create({
 				id : "view",
@@ -146,6 +151,8 @@
 									collapsible : true,
 									hideHeaders : true,
 									listeners:{
+										
+										
 										beforecelldblclick :function( self, td, cellIndex, record, tr, rowIndex, e, eOpts){
 											if(record.data.datas.leaf !=0){
 												var path = record.data.datas.path;
@@ -153,13 +160,20 @@
 													if (_center.queryById(record.id) != null) {
 														_center.remove(record.id);
 													 }
-													 var cmp = eval(txt);
+													var	cmp = eval(txt);
+												 	tabscript[record.id]=cmp;
 													 _center.add({
 														title : record.get("text"),
 														id : record.id,
 														closable : true,
 														layout : "border",
-														items : [ cmp ]
+														items : [ cmp ],
+														listeners:{
+															close :function( panel, eOpts ){
+																var _destroy = cmp._destroy || function(){};
+																_destroy();
+												        	}
+														}
 												     }).show();
 												});
 											}

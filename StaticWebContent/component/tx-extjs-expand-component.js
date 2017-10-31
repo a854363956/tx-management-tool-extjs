@@ -41,7 +41,12 @@
                     title: '系统消息',
                     msg: message,
                     buttons: Ext.MessageBox.OKCANCEL,
-                    fn:onclick||function(){},
+                    fn:function(txt){
+                    	var click = onclick||function(){};
+                    	if(txt == "ok"){
+                    		click();
+                    	}
+                    },
                     icon: Ext.MessageBox.QUESTION
                 });
             },
@@ -557,7 +562,7 @@
 			 * @parame model Ext.data.Model对象
 			 */
 			getStore:function(sqlid){
-				return Ext.data.Store.create({
+				var store =  Ext.data.Store.create({
 					autoSync : true,
 					remoteGroup : true,
 					leadingBufferZone : 300,
@@ -582,7 +587,16 @@
 					    direction : 'ASC'
 					} ],*/
 					autoLoad : true,
+					listeners:{
+						add:function( store, records, index, eOpts){
+							for(var i=0;i<records.length;i++){
+								records[i].data.id=window.GUID().replace(/-/g, "");
+							}
+						}
+					}
 				});
+				store.getModel().identifier=Ext.data.identifier.Uuid.create();
+				return store;
 			}
 		}
 	});

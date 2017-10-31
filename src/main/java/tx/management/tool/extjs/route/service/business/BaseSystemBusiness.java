@@ -1,8 +1,9 @@
 package tx.management.tool.extjs.route.service.business;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,14 +16,17 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 
+import tx.database.common.utils.Transactional;
 import tx.database.common.utils.TxSessionFactory;
 import tx.database.common.utils.entitys.QuerySqlResult;
-import tx.database.common.utils.string.SqlStringUtils;
+import tx.database.common.utils.interfaces.TxSession;
+import tx.management.tool.extjs.enumeration.CmdService;
 import tx.management.tool.extjs.exceptions.TxInvokingException;
 import tx.management.tool.extjs.route.service.ExtAjaxOfJsService;
 import tx.management.tool.extjs.route.service.entitys.RequestEntitys;
 import tx.management.tool.extjs.route.service.entitys.ResponseEntitys;
 import tx.management.tool.extjs.utils.RSA;
+import tx.management.tool.extjs.utils.SpringContextUtil;
 import tx.management.tool.extjs.utils.StringUtils;
 /**
  * 系统需要运行的业务类
@@ -94,14 +98,18 @@ public class BaseSystemBusiness {
 	 * 标准分页的保存
 	 * @param re
 	 * @return
-	 * @throws TxInvokingException 
-	 * @throws SQLException 
+	 * @throws Exception 
 	 */
-	public ResponseEntitys fnStandardPagingSave(RequestEntitys re) throws TxInvokingException, SQLException {
+	public ResponseEntitys fnStandardPagingSave(RequestEntitys re) throws Exception {
 		JSONObject j    = JSON.parseObject(re.getDatas());
 		String action   = j.getString("action");
 		String sqlid    = j.getString("sqlid");
-		List<Map<String,Object>> jsonData = JSON.parseObject(j.getString("jsonData"),new TypeReference<List<Map<String,Object>>>(){});
+		List<Map<String,Object>> jsonData = new ArrayList<Map<String,Object>>();;
+		try {
+			jsonData = JSON.parseObject(j.getString("jsonData"),new TypeReference<List<Map<String,Object>>>(){});
+		} catch (Exception e) {
+			jsonData.add( JSON.parseObject(j.getString("jsonData"),new TypeReference<Map<String,Object>>(){}));
+		}
 		
 		Map<String,Object> sqlparames = new HashMap<String,Object>();
 		sqlparames.put("id", sqlid);
@@ -114,7 +122,7 @@ public class BaseSystemBusiness {
 			if("create".equals(action)) { // 新增
 				Object  fncreate = sqldata.get("fncreate");
 				ResponseEntitys rpe = new ResponseEntitys();
-				if(fncreate == null) {
+				if(fncreate == null || "".equals(fncreate)) {
 					int number = create(sqldata,jsonData);
 					rpe.setDatas(""+number);
 				}else {
@@ -125,7 +133,7 @@ public class BaseSystemBusiness {
 			}else if ("update".equals(action)) { //修改
 				Object  fnupdate = sqldata.get("fnupdate");
 				ResponseEntitys rpe = new ResponseEntitys();
-				if(fnupdate == null) {
+				if(fnupdate == null || "".equals(fnupdate)) {
 					int number = update(sqldata,jsonData);
 					rpe.setDatas(""+number);
 				}else {
@@ -137,7 +145,7 @@ public class BaseSystemBusiness {
 			}else if ("destroy".equals(action)) { //删除
 				Object  fndelete = sqldata.get("fndelete");
 				ResponseEntitys rpe = new ResponseEntitys();
-				if(fndelete == null) {
+				if(fndelete == null || "".equals(fndelete)) {
 					int number = destroy(sqldata,jsonData);
 					rpe.setDatas(""+number);
 				}else {
@@ -150,23 +158,108 @@ public class BaseSystemBusiness {
 			}
 		}
 	}
-	private int create(String path,Map<String,Object> sqlid,List<Map<String,Object>> jsonData) {
-		return 0;
+	private int invoking(String path,Map<String,Object> sqlid,List<Map<String,Object>> jsonData) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, TxInvokingException, ClassNotFoundException {
+		Map<String,String> resolve =ExtAjaxOfJsService.resolvePath(path);
+		String type =resolve.get("type");
+		String bean = resolve.get("bean");
+		String method =resolve.get("method");
+		if(CmdService.exist(type)) {
+			if(type.equalsIgnoreCase(CmdService.java.getValue())) {
+				@SuppressWarnings("rawtypes")
+				Class clzz = Class.forName(bean);
+				@SuppressWarnings("unchecked")
+				Method m = clzz.getMethod(method, sqlid.getClass(),jsonData.getClass());
+				return (int) m.invoke(null, sqlid,jsonData);
+			}else if(type.equalsIgnoreCase(CmdService.javascript.getValue())) {
+				throw TxInvokingException.throwTxInvokingExceptions("TX-000002");
+			}else if(type.equalsIgnoreCase(CmdService.spring.getValue())) {
+				Object beans = SpringContextUtil.getApplicationContext().getBean(bean);
+				Method m = beans.getClass().getMethod(method, sqlid.getClass(),jsonData.getClass());
+				return (int) m.invoke(beans, sqlid,jsonData);
+			}else {
+				throw TxInvokingException.throwTxInvokingExceptions("TX-000002");
+			}
+		}else {
+			throw TxInvokingException.throwTxInvokingExceptions("TX-000002");
+		}
 	}
-	private int create(Map<String,Object> sqlid,List<Map<String,Object>> jsonData) {
-		return 0;
+	private int create(String path,Map<String,Object> sqlid,List<Map<String,Object>> jsonData) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, TxInvokingException, ClassNotFoundException {
+		return invoking(path,sqlid,jsonData);
 	}
-	private int update(String path,Map<String,Object> sqlid,List<Map<String,Object>> jsonData) {
-		return 0;
+	
+	private int save(Map<String,Object> sqlid,List<Map<String,Object>> jsonData) throws SQLException {
+		TxSession session = txSessionFactory.getTxSession();
+		Transactional t =session.openTransactional();
+		try {
+			String singletablename = (String) sqlid.get("singletablename");
+			int i =0;
+			for(Map<String,Object> m : jsonData) {
+				i+=session.save(singletablename, m);
+			}
+			t.commit();
+			return i;
+		}catch (SQLException e) {
+			t.rollback();
+			throw e;
+		}
 	}
-	private int update(Map<String,Object> sqlid,List<Map<String,Object>> jsonData) {
-		return 0;
+	private int create(Map<String,Object> sqlid,List<Map<String,Object>> jsonData) throws SQLException {
+		return save(sqlid,jsonData);
 	}
-	private int destroy(String path,Map<String,Object> sqlid,List<Map<String,Object>> jsonData) {
-		return 0;
+	private int update(String path,Map<String,Object> sqlid,List<Map<String,Object>> jsonData) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException, TxInvokingException {
+		return invoking(path,sqlid,jsonData);
 	}
-	private int destroy(Map<String,Object> sqlid,List<Map<String,Object>> jsonData) {
-		return 0;
+	private int update(Map<String,Object> sqlid,List<Map<String,Object>> jsonData) throws SQLException {
+		return save(sqlid,jsonData);
+	}
+	private int destroy(String path,Map<String,Object> sqlid,List<Map<String,Object>> jsonData) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException, TxInvokingException {
+		return invoking(path,sqlid,jsonData);
+	}
+	private int destroy(Map<String,Object> sqlid,List<Map<String,Object>> jsonData) throws Exception {
+		String singletablename = (String) sqlid.get("singletablename");
+		TxSession session = txSessionFactory.getTxSession();
+		Transactional t =session.openTransactional();
+		try {
+			int i =0;
+			for(Map<String,Object> m : jsonData) {
+				if(m.get("id") == null) {
+					throw TxInvokingException.throwTxInvokingExceptions("TX-000013");
+				}
+				i+=session.delete(singletablename, (String)m.get("id"));
+				
+			}
+			t.commit();
+			return i;
+		} catch (Exception e) {
+			t.rollback();
+			throw e;
+		}
+		
+	}
+	
+	/**
+	 * 用户表格配置页面的保存方法
+	 * @param re
+	 * @return
+	 * @throws Exception
+	 */
+	public ResponseEntitys fnSaveTableModelsConfig(RequestEntitys re) throws Exception{
+		JSONObject j = JSON.parseObject(re.getDatas());
+		if(j  == null) {
+			throw TxInvokingException.throwTxInvokingExceptions("TX-000011");
+		}else {
+			String tablename          = j.getString("name");
+			Map<String,Object> datas  = JSON.parseObject(j.getString("datas"),new TypeReference<Map<String,Object>>(){});
+			int i =txSessionFactory.getTxSession().update(tablename, datas);
+			ResponseEntitys rpe = new ResponseEntitys();
+			if(i!=0) {
+				rpe.setMsg("更新数据成功!");
+				rpe.setDatas(""+i);
+				return rpe;
+			}else {
+				throw TxInvokingException.throwTxInvokingExceptions("TX-000012");
+			}
+		}
 	}
 	/**
 	 * 标准分页查询 
