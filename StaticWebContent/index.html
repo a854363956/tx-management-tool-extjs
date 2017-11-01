@@ -158,23 +158,26 @@
 												var path = record.data.datas.path;
 												Tx.AjaxRequest.getPageCode(path,function(txt){
 													if (_center.queryById(record.id) != null) {
-														_center.remove(record.id);
+														var cmp = _center.queryById(record.id);
+														cmp.show();
+													 }else{
+														var	cmp = eval(txt);
+													 	tabscript[record.id]=cmp;
+														 _center.add({
+															title : record.get("text"),
+															id : record.id,
+															closable : true,
+															layout : "border",
+															items : [ cmp ],
+															listeners:{
+																close :function( panel, eOpts ){
+																	var _destroy = cmp._destroy || function(){};
+																	_destroy();
+													        	}
+															}
+													     }).show();
 													 }
-													var	cmp = eval(txt);
-												 	tabscript[record.id]=cmp;
-													 _center.add({
-														title : record.get("text"),
-														id : record.id,
-														closable : true,
-														layout : "border",
-														items : [ cmp ],
-														listeners:{
-															close :function( panel, eOpts ){
-																var _destroy = cmp._destroy || function(){};
-																_destroy();
-												        	}
-														}
-												     }).show();
+													
 												});
 											}
 											
