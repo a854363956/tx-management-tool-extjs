@@ -40,6 +40,24 @@ public class BaseSystemBusiness {
 	@Resource(name="TxSessionFactory")
 	private TxSessionFactory txSessionFactory;
 	
+	
+	/**
+	 * 根据SQLID查询列的信息
+	 * @param re
+	 * @return
+	 * @throws SQLException
+	 */
+	public ResponseEntitys fnGetTableColumns(RequestEntitys re) throws SQLException {
+		ResponseEntitys rpe = new ResponseEntitys();
+		JSONObject j = JSON.parseObject(re.getDatas());
+		String sqlid = j.getString("sqlid");
+		Map<String,Object> sqlparame = new HashMap<String,Object>();
+		sqlparame.put("gridid", sqlid);
+		List<Map<String,Object>> datas =txSessionFactory.getTxSession().select("select * from tx_sys_grid_columns where gridid =${gridid} ", sqlparame).getDatas();
+		rpe.setDatas(JSON.toJSONString(datas));
+		return rpe;
+	}
+	
 	/**
 	 * 根据SQL生成字段信息
 	 * @param re  
@@ -250,7 +268,7 @@ public class BaseSystemBusiness {
 		}else {
 			String tablename          = j.getString("name");
 			Map<String,Object> datas  = JSON.parseObject(j.getString("datas"),new TypeReference<Map<String,Object>>(){});
-			int i =txSessionFactory.getTxSession().update(tablename, datas);
+			int i =txSessionFactory.getTxSession().save(tablename, datas);
 			ResponseEntitys rpe = new ResponseEntitys();
 			if(i!=0) {
 				rpe.setMsg("更新数据成功!");

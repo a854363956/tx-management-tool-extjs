@@ -1,7 +1,7 @@
 (function(){
 	"use strict";
 	window.GUID = function() {
-		  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		  return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 		    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
 		    return v.toString(16);
 		  });
@@ -375,26 +375,26 @@
 		statics:{
 			/**
 			 * 根据配置获取TxGrid的列的信息
-			 * [
-			 * 	@parame name     对应的绑定的属性名称
-			 * 	@parame label    对应的界面的显示名称
-			 * 	@parame dataType 对应的数据类型
-			 * 				date     日期类型
-			 *              datetime 日期加上时间,更加详细的日期类型
-			 *              string   字符串类型
-			 *              number   数字类型
-			 *              double   小数类型
-			 *  @parame format   格式化字符串显示的JS脚本
-			 *  @parame editor 
-			 *              date      日期编辑器
-			 *              datetime  日期加上时间,更加详细的日期编辑器
-			 *              double    小数编辑器
-			 *              number    数字编辑器
-			 *              string    文本编辑器
-			 *              dropdown  下拉框编辑器
-			 * ]
+			 * 	sqlid     sqlid
+			 *  columns   列的信息
+			 *  callback  完成后的回调函数
 			 */
 			getColumns:function(obj){
+				Tx.AjaxRequest.post({
+					cmd:"spring:baseSystemBusiness#fnGetTableColumns",
+					datas:{
+						sqlid:obj.sqlid
+					},
+					dom:null,
+					callback:function(result){
+						var datas   = Ext.JSON.decode(result.datas);
+						var columns = obj.columns || [];
+						for(var i=0;i<columns.length;i++){
+							
+						}
+						debugger;
+					}
+				});
 			},
 			/**
 			 * columns 列的信息

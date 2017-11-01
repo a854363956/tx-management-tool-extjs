@@ -23,21 +23,25 @@
         text: '字段名称',
         flex: .8,
         dataIndex: 'name',
-    },
-    {
+    },{
         text: '字段类型',
         flex: .8,
         dataIndex: 'datatype'
-    },
-    {
+    },{
         text: '列的宽度',
         flex: .8,
         dataIndex: 'width',
         editor:{
         	xtype:"textfield",
         }
-    },
-    {
+    },{
+    	text: '编辑器类型',
+        flex: .8,
+        dataIndex: 'editor',
+        editor:{
+        	xtype:"textfield",
+        }
+    },{
         text: '是否只读',
         flex: .8,
         dataIndex: 'isready',
@@ -52,13 +56,22 @@
 			value:"0",
         },
 	    renderer:function(value){
-        	return value=="0"? "只读":value=="0"?"不只读":"未知属性";
+        	return value=="0"? "只读":value=="1"?"正常":"未知属性";
         }
     },{
-        text: '强制显示名称',
-        flex: 2,
+        text: '强制名称',
+        flex: .8,
         dataIndex: 'forcedlabel',
-        
+        editor:{
+        	xtype:"textfield",
+        }
+    },{
+    	text: '扩展属性',
+        flex: 2,
+        dataIndex: 'exatt',
+        editor:{
+        	xtype:"textfield",
+        }
     }],
     sqlid:"1"
 });
@@ -164,18 +177,28 @@ var addData=  Ext.Window.create({
     		 },{
     			    fieldLabel : '单表表名',
     			 	name:"singletablename",
+    			 	regex : /^[a-zA-Z0-9_]+$/, 
+    			 	regexText:"不是有效的路径格式,路径格式为^[a-zA-Z0-9_]+$"
     		 },{
+    			    xtype: 'textfield',
     			 	fieldLabel : '创建方法',
     			 	name:"fncreate",
     			 	allowBlank:true,
+    			 	regex : /^[a-zA-Z0-9_]+:[a-zA-Z0-9_]+#[a-zA-Z0-9_]+$/, 
+    			 	regexText:"不是有效的路径格式,路径格式为^[a-zA-Z0-9_]+:[a-zA-Z0-9_]+#[a-zA-Z0-9_]+$"
     		 },{
+    			    xtype: 'textfield',
     			    fieldLabel : '修改方法',
     			 	name:"fnupdate",
-    			 	allowBlank:true
+    			 	allowBlank:true,
+    			 	regex : /^[a-zA-Z0-9_]+:[a-zA-Z0-9_]+#[a-zA-Z0-9_]+$/, 
+    			 	regexText:"不是有效的路径格式,路径格式为^[a-zA-Z0-9_]+:[a-zA-Z0-9_]+#[a-zA-Z0-9_]+$"
     		 },{
     			    fieldLabel : '删除方法',
     			 	name:"fndelete",
-    			 	allowBlank:true
+    			 	allowBlank:true,
+    			 	regex : /^[a-zA-Z0-9_]+:[a-zA-Z0-9_]+#[a-zA-Z0-9_]+$/, 
+    			 	regexText:"不是有效的路径格式,路径格式为^[a-zA-Z0-9_]+:[a-zA-Z0-9_]+#[a-zA-Z0-9_]+$"
     			 	
     		 },{
     			 	xtype : 'fieldset',
@@ -266,7 +289,37 @@ var grid = Tx.auto.TxGrid.getTxGrid({
 		text : "新增数据",
 		iconCls : "fa fa-plus-circle ",
 		handler:function(){
+			var datas = {};
+			var updatetime = Ext.util.Format.date(new Date(),"Y-m-d H:i:s");
+			var createdate = Ext.util.Format.date(new Date(),"Y-m-d H:i:s");
+			datas.updatetime=updatetime;
+			datas.createdate=createdate;
+			datas.querysql="";
+			datas.countsql ="";
+			datas.description="";
+			datas.singletablename="";
+			datas.fncreate="";
+			datas.fnupdate="";
+			datas.fndelete="";
+			datas.id=GUID();
+			Ext.getCmp("_usermaintainpage_form").getForm().setValues(datas);
+			var proxy = grid_columns.store.getProxy();
+			proxy.setExtraParams({
+				"conditionName":"gridid",
+				"conditionValue":Ext.getCmp("_usermaintainpage_form").getForm().getValues().id,
+				"conditionSymbol":"2",
+			});
+			grid_columns.store.load();
 			addData.show();
+		}
+	},{
+		text : "删除数据",
+		iconCls : "fa fa-plus-circle ",
+		handler:function(){
+			Tx.MessageBox.question("您确定要删除当前选中的数据,删除数据后无法重新恢复数据,是否确认?", function() {
+			var selection = grid.getView().getSelectionModel().getSelection()[0];
+				grid.store.remove(selection);
+		    });
 		}
 	}],
 	columns:[{
