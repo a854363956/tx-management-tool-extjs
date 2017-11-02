@@ -41,6 +41,49 @@ public class BaseSystemBusiness {
 	private TxSessionFactory txSessionFactory;
 	
 	
+/*	public List<Map<String,Object>> getColumn(String sqlid) throws SQLException{
+		Map<String,Object> sqlparame = new HashMap<String,Object>();
+		sqlparame.put("gridid", sqlid);
+		
+		//表格列的名称以及相关的数据
+		List<Map<String,Object>> d = txSessionFactory.getTxSession().select("select * from tx_sys_grid_columns where gridid =${gridid}", sqlparame).getDatas();
+		
+		return null;
+	}*/
+	
+	
+	/**
+	 * 下载资源文件
+	 * @param re 
+	 * @return
+	 * @throws SQLException
+	 * @throws TxInvokingException 
+	 */
+/*	public ResponseEntitys fnDownloadFile(RequestEntitys re) throws SQLException, TxInvokingException{
+		JSONObject j = JSON.parseObject(re.getDatas());
+		String sqlid = j.getString("sqlid");
+		String parame= j.getString("parame");
+		Map<String,Object> sqlparame = new HashMap<String,Object>();
+		sqlparame.put("id", sqlid);
+		
+		//表格内容的数据
+		List<Map<String,Object>> r = txSessionFactory.getTxSession().select("select * from tx_sys_grid where id=${id}", sqlparame).getDatas();
+		if(r.size() == 0) {
+			throw TxInvokingException.throwTxInvokingExceptions("TX-000006");
+		}else {
+			sqlparame.clear();
+			sqlparame.put("gridid", sqlid);
+			
+			//表格列的名称以及相关的数据
+			List<Map<String,Object>> d = txSessionFactory.getTxSession().select("select * from tx_sys_grid_columns where gridid =${gridid}", sqlparame).getDatas();
+			
+			
+			
+		}
+		return null;
+	}
+	*/
+	
 	/**
 	 * 根据SQLID查询列的信息
 	 * @param re
