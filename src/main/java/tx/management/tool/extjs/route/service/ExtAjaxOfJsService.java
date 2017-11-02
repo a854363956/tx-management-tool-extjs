@@ -28,6 +28,7 @@ import tx.management.tool.extjs.enumeration.CmdService;
 import tx.management.tool.extjs.exceptions.TxInvokingException;
 import tx.management.tool.extjs.route.service.entitys.RequestEntitys;
 import tx.management.tool.extjs.route.service.entitys.ResponseEntitys;
+import tx.management.tool.extjs.utils.Base64;
 import tx.management.tool.extjs.utils.DES;
 import tx.management.tool.extjs.utils.SpringContextUtil;
 import tx.management.tool.extjs.utils.StringUtils;
@@ -71,7 +72,7 @@ public class ExtAjaxOfJsService extends HttpServlet{
 				String key_0 = (String) reqen.getSession().getAttribute("key_0");
 				String key_1 = (String) reqen.getSession().getAttribute("key_1");
 				String key_2 = (String) reqen.getSession().getAttribute("key_2");
-				String txt = des.Decrypt(reqen.getDatas(), key_0, key_1, key_2);
+				String txt = des.Decrypt(new String(Base64.decode(reqen.getDatas())), key_0, key_1, key_2);
 				reqen.setDatas(txt);
 				@SuppressWarnings("unchecked")
 				Map<String,Object> r=(Map<String, Object>) reqen.getSession().getAttribute("USERINFO");
@@ -82,7 +83,7 @@ public class ExtAjaxOfJsService extends HttpServlet{
 				re.setState("SUCCESS");
 
 				if((Integer)r.get("safety") == 1) {
-					re.setDatas(des.Encrypt(re.getDatas() == null ? "" : re.getDatas(), key_0, key_1, key_2));
+					re.setDatas(Base64.encode(des.Encrypt(re.getDatas() == null ? "" : re.getDatas(), key_0, key_1, key_2).getBytes()));
 					re.setSafety(true);
 				}else {
 					re.setSafety(false);
@@ -178,6 +179,16 @@ public class ExtAjaxOfJsService extends HttpServlet{
 			fis = new FileInputStream(path);
 			reader= new InputStreamReader(fis,"UTF-8");
 			languageProperties.load(reader);
+			/*
+			InterceptionSQLRegistered.registered(new RegistereSqlInterception() {
+				//此处拦截SQL,然后进行操作 
+				@Override
+				public String hooksql(String sql, Map<String, Object> parames) {
+					
+					return null;
+				}
+			});
+			*/
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

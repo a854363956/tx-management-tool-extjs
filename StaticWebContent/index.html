@@ -164,7 +164,17 @@
 														var cmp = _center.queryById(record.id);
 														cmp.show();
 													 }else{
-														var	cmp = eval(txt);
+														 var cmp;
+														try{
+															var	cmp = eval(txt);
+															if(!Ext.isObject(cmp)){
+																Tx.MessageBox.error("页面代码编辑错误,返回的不是一个有效的组件对象!");
+																return;
+															}
+														}catch(e){
+															Tx.MessageBox.error("页面代码编辑错误,错误信息:"+e.message);
+															return;
+														}
 													 	tabscript[record.id]=cmp;
 														 _center.add({
 															title : record.get("text"),

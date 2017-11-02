@@ -82,6 +82,7 @@
 				        	request_date:""+new Date().getTime()
 				 }
 			 }
+			 debugger;
 			request.setConfig(confg);
 	        return function(options, success, response) {
 	        	if(success == false ){
@@ -152,7 +153,7 @@
 			if(txt == null || typeof(txt) == "undefined"){
 				return "";
 			}else{
-				return $des_encrypt(txt,Ext.util.Cookies.get("key_0"),Ext.util.Cookies.get("key_1"),Ext.util.Cookies.get("key_2"));
+				return Ext.util.Base64.encode($des_encrypt(txt,Ext.util.Cookies.get("key_0"),Ext.util.Cookies.get("key_1"),Ext.util.Cookies.get("key_2")));
 			}
 		} catch (e) {
 		}
@@ -165,7 +166,7 @@
 			if(txt == null || typeof(txt) == "undefined"){
 				return "";
 			}else{
-				return $des_decrypt(txt,Ext.util.Cookies.get("key_0"),Ext.util.Cookies.get("key_1"),Ext.util.Cookies.get("key_2"));
+				return Ext.util.Base64.decode($des_decrypt(txt,Ext.util.Cookies.get("key_0"),Ext.util.Cookies.get("key_1"),Ext.util.Cookies.get("key_2")));
 			}
 		} catch (e) {
 		}
@@ -312,6 +313,63 @@
 			}
 		}
 	});
+	
+	Ext.define("Tx.field.JSTextArea",{
+		xtype: 'jstextarea',
+		extend:"Ext.form.TextArea",
+		setValue:function(txt){
+			var editor = this.editor || null;
+			if(editor == null){
+				this._initValue=txt;
+			}else{
+				this.editor.setValue(txt);
+			}
+		},
+		getSubmitData:function(){
+			var result = {};
+			result[this.name] = this.getValue();
+			return result;
+		},
+		getValue:function(){
+			var editor = this.editor || null;
+			if(editor == null){
+				return this._initValue;
+			}else{
+				return editor.getValue();
+			}
+		},
+		listeners:{
+			afterrender :function( self, eOpts){
+				Ext.require("component.libs.codemirror.mode.javascript.javascript");
+				setTimeout(function(){
+					var width = $("#"+self.id+"-inputEl").width();
+					var height = $("#"+self.id+"-inputEl").height();
+					self.editor = CodeMirror.fromTextArea(Ext.getDom(self.id+"-inputEl"), {
+					    mode: "application/json",
+					    indentWithTabs: true,
+					    smartIndent: true,
+					    lineNumbers: true,
+					    matchBrackets : true,
+					    autofocus: true,
+/*					    extraKeys: {"Ctrl-Space": "autocomplete"},
+					    hintOptions: {tables: {
+					      users: ["name", "score", "birthDate"],
+					      countries: ["name", "population", "size"]
+					    }}*/
+				   });
+				   self.editor.setSize(width,height);
+				   self.editor.setValue(self._initValue);
+				   /*self.editor.on("change",function(self_,arg){
+					   	self.setValue(self_.getValue());
+					});
+				   self.editor.setValue(self.getValue());*/
+				},100);
+				
+			}
+		},
+		
+	});
+	
 	/**
 	 * mode 高亮代码的方式
 	 * 
@@ -376,7 +434,6 @@
 			/**
 			 * 根据配置获取TxGrid的列的信息
 			 * 	sqlid     sqlid
-			 *  columns   列的信息
 			 *  callback  完成后的回调函数
 			 */
 			getColumns:function(obj){
@@ -388,11 +445,31 @@
 					dom:null,
 					callback:function(result){
 						var datas   = Ext.JSON.decode(result.datas);
-						var columns = obj.columns || [];
-						for(var i=0;i<columns.length;i++){
-							
+						var result_ = new Array();
+						for(var i=0;i<datas.length;i++){
+							var column={
+									text:datas[i].label || datas[i].name,
+							}
+							var width = datas[i].width || null;
+							if(width != null){
+								column.width=width;
+							}
+							var exatt = datas[i].exatt || null;
+							if(width != null){
+								for(var att in width){
+									column[att]=width[att];
+								}
+							}
+							var isready = datas[i].isready || null
+							if(isready!=null){
+								isready = isready =="0"?true:false;
+								column.editor=isready?"":column.editor;
+							}
+							column.name=datas[i].name
+							result_.push(column);
 						}
-						debugger;
+						var callback = obj.callback || function(){};
+						callback(result_);
 					}
 				});
 			},
@@ -479,8 +556,8 @@
 						queryDatas();
 					}
 				});
-				items.push("-")
-				items.push({
+				items.push("-");
+				/*items.push({  
 					text : "导出数据",
 					iconCls:"fa fa-cloud-download",
 					menu:{
@@ -499,7 +576,7 @@
 							}
 						}]
 				    }
-				});
+				});*/
 				items.push("->");
 				var items_ = obj.items || [];
 				for(var i=0;i<items_.length;i++){

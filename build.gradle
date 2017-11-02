@@ -52,9 +52,10 @@ dependencies {
             'commons-logging:commons-logging:1.2',
             'com.alibaba:fastjson:1.2.32',
             'mysql:mysql-connector-java:5.1.40',
+            'org.apache.poi:poi:3.17',
+            'com.mchange:c3p0:0.9.5.2',
+            'mysql:mysql-connector-java:5.1.38'
     )
-    compile group: 'com.mchange', name: 'c3p0', version: '0.9.5.2'
-	compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.38'
      // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
 }

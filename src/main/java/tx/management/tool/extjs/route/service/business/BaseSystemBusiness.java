@@ -1,5 +1,6 @@
 package tx.management.tool.extjs.route.service.business;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
@@ -20,6 +21,7 @@ import tx.database.common.utils.Transactional;
 import tx.database.common.utils.TxSessionFactory;
 import tx.database.common.utils.entitys.QuerySqlResult;
 import tx.database.common.utils.interfaces.TxSession;
+import tx.database.common.utils.string.SqlStringUtils;
 import tx.management.tool.extjs.enumeration.CmdService;
 import tx.management.tool.extjs.exceptions.TxInvokingException;
 import tx.management.tool.extjs.route.service.ExtAjaxOfJsService;
@@ -83,7 +85,13 @@ public class BaseSystemBusiness {
 		return null;
 	}
 	*/
+
 	
+	public String getRealSQL(String sql,RequestEntitys re) {
+		Map<String,Object> userinfo = (Map<String, Object>) re.getSession().getAttribute("USERINFO");
+		Integer language = (Integer) userinfo.get("language");
+		return SqlStringUtils.replaceAll(sql, "$${language}", ""+language);
+	}
 	/**
 	 * 根据SQLID查询列的信息
 	 * @param re
@@ -96,7 +104,7 @@ public class BaseSystemBusiness {
 		String sqlid = j.getString("sqlid");
 		Map<String,Object> sqlparame = new HashMap<String,Object>();
 		sqlparame.put("gridid", sqlid);
-		List<Map<String,Object>> datas =txSessionFactory.getTxSession().select("select * from tx_sys_grid_columns where gridid =${gridid} ", sqlparame).getDatas();
+		List<Map<String,Object>> datas =txSessionFactory.getTxSession().select(getRealSQL("select s.*,e.label from tx_sys_grid_columns s  left join tx_base_language e on e.name = s.name  and e.languagecode=$${language} where gridid =${gridid} ",re), sqlparame).getDatas();
 		rpe.setDatas(JSON.toJSONString(datas));
 		return rpe;
 	}
@@ -111,7 +119,7 @@ public class BaseSystemBusiness {
 		JSONObject j = JSON.parseObject(re.getDatas());
 		String sql =j.getString("sql");
 		ResponseEntitys rpe = new ResponseEntitys();
-		rpe.setDatas(JSON.toJSONString(txSessionFactory.getTxSession().selectPaging(sql, null,0,1)));
+		rpe.setDatas(JSON.toJSONString(txSessionFactory.getTxSession().selectPaging(getRealSQL(sql,re), null,0,1)));
 		return rpe;
 	}
 	
@@ -174,7 +182,7 @@ public class BaseSystemBusiness {
 		
 		Map<String,Object> sqlparames = new HashMap<String,Object>();
 		sqlparames.put("id", sqlid);
-		QuerySqlResult qsr = txSessionFactory.getTxSession().select("select * from tx_sys_grid where id=${id}", sqlparames);
+		QuerySqlResult qsr = txSessionFactory.getTxSession().select(getRealSQL("select * from tx_sys_grid where id=${id}",re), sqlparames);
 		List<Map<String,Object>> sqliddatas = qsr.getDatas();
 		if(sqliddatas.size() == 0) {
 			throw TxInvokingException.throwTxInvokingExceptions("TX-000006",sqlid);
@@ -353,7 +361,7 @@ public class BaseSystemBusiness {
 			}
 			Map<String,Object> sqlparames = new HashMap<String,Object>();
 			sqlparames.put("id", sqlid);
-			List<Map<String,Object>> sqllist = txSessionFactory.getTxSession().select("select * from tx_sys_grid where id=${id}", sqlparames).getDatas();
+			List<Map<String,Object>> sqllist = txSessionFactory.getTxSession().select(getRealSQL("select * from tx_sys_grid where id=${id}",re), sqlparames).getDatas();
 			if(sqllist.size() == 0) {
 				throw TxInvokingException.throwTxInvokingExceptions("TX-000006", sqlid);
 			}else {
@@ -361,8 +369,8 @@ public class BaseSystemBusiness {
 				String sql      = (String) result.get("querysql");
 				String countsql = (String) result.get("countsql");
 				Map<String,Object> d = new HashMap<String,Object>();
-				List<Map<String,Object>> datas =txSessionFactory.getTxSession().selectPaging(String.format("select * from (%s) as ______tables where %s ", sql,where), whereparames,limit,page).getDatas();
-				Long count = (Long) txSessionFactory.getTxSession().select(String.format("%s where %s", countsql,where) , whereparames).getDatas().get(0).get("count");
+				List<Map<String,Object>> datas =txSessionFactory.getTxSession().selectPaging(getRealSQL(String.format("select * from (%s) as ______tables where %s ", sql,where),re), whereparames,limit,page).getDatas();
+				Long count = (Long) txSessionFactory.getTxSession().select(getRealSQL(String.format("%s where %s", countsql,where),re) , whereparames).getDatas().get(0).get("count");
 				d.put("count", count);
 				d.put("datas", datas);
 				rep.setDatas(JSON.toJSONString(d));
@@ -372,7 +380,7 @@ public class BaseSystemBusiness {
 		}else {
 			Map<String,Object> sqlparames = new HashMap<String,Object>();
 			sqlparames.put("id", sqlid);
-			List<Map<String,Object>> sqllist = txSessionFactory.getTxSession().select("select * from tx_sys_grid where id=${id}", sqlparames).getDatas();
+			List<Map<String,Object>> sqllist = txSessionFactory.getTxSession().select(getRealSQL("select * from tx_sys_grid where id=${id}",re), sqlparames).getDatas();
 			if(sqllist.size() == 0) {
 				throw TxInvokingException.throwTxInvokingExceptions("TX-000006", sqlid);
 			}else {
@@ -380,8 +388,8 @@ public class BaseSystemBusiness {
 				String sql      = (String) result.get("querysql");
 				String countsql = (String) result.get("countsql");
 				Map<String,Object> d = new HashMap<String,Object>();
-				List<Map<String,Object>> datas =txSessionFactory.getTxSession().selectPaging(sql, null,limit,page).getDatas();
-				Long count = (Long) txSessionFactory.getTxSession().select(countsql, null).getDatas().get(0).get("count");
+				List<Map<String,Object>> datas =txSessionFactory.getTxSession().selectPaging(getRealSQL(sql,re), null,limit,page).getDatas();
+				Long count = (Long) txSessionFactory.getTxSession().select(getRealSQL(countsql,re), null).getDatas().get(0).get("count");
 				d.put("count", count);
 				d.put("datas", datas);
 				rep.setDatas(JSON.toJSONString(d));
@@ -402,7 +410,7 @@ public class BaseSystemBusiness {
 		ResponseEntitys rp = new ResponseEntitys();
 		Map<String,Object> sqlparames=new HashMap<String,Object>();
 		sqlparames.put("languagecode",((Map<String,Object>) re.getSession().getAttribute("USERINFO")).get("language"));
-		QuerySqlResult rsr = txSessionFactory.getTxSession().select("select * from tx_base_language where languagecode=${languagecode}", sqlparames);
+		QuerySqlResult rsr = txSessionFactory.getTxSession().select(getRealSQL("select * from tx_base_language where languagecode=${languagecode}",re), sqlparames);
 		rp.setDatas(JSON.toJSONString(rsr.getDatas()));
 		return rp;
 	}
@@ -467,7 +475,7 @@ public class BaseSystemBusiness {
 		Map<String,Object> sqlparames = new HashMap<String,Object>();
 		sqlparames.put("father", father);
 		sqlparames.put("roleid", re.getRoleId());
-		QuerySqlResult r = txSessionFactory.getTxSession().select("select u.* from tx_sys_menu_authorization n left join tx_sys_menu u on n.menuid = u.id where n.roleid =${roleid} and u.father =${father}", sqlparames);
+		QuerySqlResult r = txSessionFactory.getTxSession().select(getRealSQL("select u.* from tx_sys_menu_authorization n left join tx_sys_menu u on n.menuid = u.id where n.roleid =${roleid} and u.father =${father}",re), sqlparames);
 		ResponseEntitys rep = new ResponseEntitys();
 		rep.setDatas(JSON.toJSONString(r));
 		return rep;

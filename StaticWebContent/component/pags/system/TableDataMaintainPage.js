@@ -35,29 +35,46 @@
         	xtype:"textfield",
         }
     },{
-    	text: '编辑器类型',
+    	text: '编辑器',
         flex: .8,
         dataIndex: 'editor',
         editor:{
-        	xtype:"textfield",
-        }
+        	xtype:"combo",
+        	xtype:'combo',
+			editable:false,
+			width:100,
+			store:[
+				['0','日期'],
+				['1','日期时间'],
+				['2','下拉'],
+				['3','文本'],
+			],
+			value:"3",
+       },
+       renderer:function(value){
+       	return value=="0"? "日期":value=="1"?"日期时间":value=="2"?"下拉":value=="3"?"文本":"未知";
+       }
     },{
-        text: '是否只读',
-        flex: .8,
+        text: '只读',
+        flex: .5,
         dataIndex: 'isready',
         editor:{
         	xtype:'combo',
 			editable:false,
 			width:85,
 			store:[
-				['0','只读'],
-				['1','不只读'],
+				['0','是'],
+				['1','否'],
 			],
 			value:"0",
         },
 	    renderer:function(value){
-        	return value=="0"? "只读":value=="1"?"正常":"未知属性";
+        	return value=="0"? "是":value=="1"?"否":"未知";
         }
+    },{
+    	text: '显示名称',
+        flex: .8,
+        dataIndex: 'label',
     },{
         text: '强制名称',
         flex: .8,
@@ -70,7 +87,7 @@
         flex: 2,
         dataIndex: 'exatt',
         editor:{
-        	xtype:"textfield",
+        	xtype:"jstextarea",
         }
     }],
     sqlid:"1"
@@ -135,11 +152,16 @@ var addData=  Ext.Window.create({
     			datas.countsql =sqlFormatter.format(datas.countsql);
     			Ext.getCmp("_usermaintainpage_form").getForm().setValues(datas);
     		}
-    	},"-"/*,{
-    		xtype:"button",
-    		iconCls:"fa fa-bug",
-    		text:"测试SQL语句"
-    	}*/]
+    	},"-",{
+    		xtype: 'button',
+    		iconCls:"fa fa-television",
+    		text: '预览表格',
+    		handler:function(){
+    			
+    		}
+    	},"-","->","-",Ext.form.Label.create({
+        	text:"$${language}->当前登入的方言"
+        })]
     }],
     items:[{
     	xtype:"form",
@@ -262,6 +284,7 @@ var addData=  Ext.Window.create({
 						},
 						dom:addData,
 						callback:function(result){
+							debugger;
 							Tx.MessageBox.question("数据保存成功,是否刷新数据并隐藏弹出框?",function(){
 								grid.store.load();
 								addData.hide();
@@ -401,8 +424,8 @@ var cmp = Ext.Panel.create({
 	layout : "border",
 	items:[center]
 });
-cmp._destroy=function(){
+/*cmp._destroy=function(){
 	addData.destroy();
-}
+}*/
 return cmp;
 })();

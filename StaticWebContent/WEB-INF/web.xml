@@ -4,14 +4,7 @@
 	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
 	id="WebApp_ID" version="3.1">
 	<display-name>tx-management-tool-extjs</display-name>
-	<welcome-file-list>
-		<welcome-file>index.html</welcome-file>
-		<welcome-file>index.htm</welcome-file>
-		<welcome-file>index.jsp</welcome-file>
-		<welcome-file>default.html</welcome-file>
-		<welcome-file>default.htm</welcome-file>
-		<welcome-file>default.jsp</welcome-file>
-	</welcome-file-list>
+	
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>
@@ -68,13 +61,20 @@
 			<param-name>tx-language-path</param-name>
 			<param-value>/WEB-INF/classes/tx/management/tool/extjs/configs/languages/ZH-CN.properties</param-value>
 		</init-param>
-		<load-on-startup>0</load-on-startup>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>ExtAjaxOfJsService</servlet-name>
 		<url-pattern>/ExtAjaxOfJsService/Request/POST</url-pattern>
 	</servlet-mapping>
 	
-	
+	<!-- ExtJsAnnotationService注解引擎 -->
+	<servlet>
+		<servlet-name>ExtJsAnnotationService</servlet-name>
+		<servlet-class>tx.management.tool.extjs.route.service.ExtJsAnnotationService</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ExtJsAnnotationService</servlet-name>
+		<url-pattern>/component/pags/*</url-pattern>
+	</servlet-mapping>
 	
 </web-app>
