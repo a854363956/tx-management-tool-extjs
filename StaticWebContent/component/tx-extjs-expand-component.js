@@ -480,6 +480,26 @@
 					}
 				});
 				items.push("-")
+				items.push({
+					text : "导出数据",
+					iconCls:"fa fa-cloud-download",
+					menu:{
+						items:[{
+							text:"导出Excel",
+							iconCls:"fa fa-file-excel-o",
+							handler:function(){
+								var sqlid = obj.sqlid;
+								//alert(obj.sqlid);
+							}
+						},{
+							text:"导出TXT",
+							iconCls:"fa fa-file-text-o",
+							handler:function(){
+								var sqlid = obj.sqlid;
+							}
+						}]
+				    }
+				});
 				items.push("->");
 				var items_ = obj.items || [];
 				for(var i=0;i<items_.length;i++){
