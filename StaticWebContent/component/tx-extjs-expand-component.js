@@ -82,7 +82,6 @@
 				        	request_date:""+new Date().getTime()
 				 }
 			 }
-			 debugger;
 			request.setConfig(confg);
 	        return function(options, success, response) {
 	        	if(success == false ){
@@ -446,26 +445,77 @@
 					callback:function(result){
 						var datas   = Ext.JSON.decode(result.datas);
 						var result_ = new Array();
+						result_.push({
+							header: '', 
+							xtype: 'rownumberer',  
+							align: 'center', 
+							sortable: false 
+						});
 						for(var i=0;i<datas.length;i++){
 							var column={
 									text:datas[i].label || datas[i].name,
 							}
 							var width = datas[i].width || null;
 							if(width != null){
-								column.width=width;
+								if(Ext.isNumber(width)){
+									column.width =window.parseInt(width);
+								}else{
+									column.width =width;
+								}
 							}
+							
 							var exatt = datas[i].exatt || null;
-							if(width != null){
+							if(exatt != null){
 								for(var att in width){
 									column[att]=width[att];
 								}
 							}
 							var isready = datas[i].isready || null
+							var editor =datas[i].editor || null;
 							if(isready!=null){
 								isready = isready =="0"?true:false;
-								column.editor=isready?"":column.editor;
+								if(isready==false){
+									if(editor!=null){
+										if(editor=="3"){
+											column.editor={
+													xtype:"textfield",
+											}
+										}else if(editor=="1"){
+											column.editor={
+													xtype:"datetimefield",
+											}
+										}else if(editor=="0"){
+											column.editor={
+													xtype:"datefield",
+											}
+										}
+									}
+								}
+								//column.editor=isready?"":column.editor;
 							}
-							column.name=datas[i].name
+							if(editor == "1"){
+								column.renderer=function(value){
+									var v = value || null;
+									if(v==null){
+										return "";
+									}else{
+										return Ext.util.Format.date(new Date(value),"Y-m-d H:i:s");
+									}
+						        }
+							}else if(editor == "0"){
+								column.renderer=function(value){
+									var v =value || null;
+									if(v == null){
+										return "";
+									}else{
+										return Ext.util.Format.date(new Date(value),"Y-m-d");
+									}
+						        }
+							}
+							
+							var hide = datas[i].isshow || false;
+							column.hidden =  datas[i].isshow  =="0"? false:true;
+							column.dataIndex=datas[i].name;
 							result_.push(column);
 						}
 						var callback = obj.callback || function(){};
@@ -697,4 +747,6 @@
 			}
 		}
 	});
+	
+
 })();

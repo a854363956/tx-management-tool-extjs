@@ -1,7 +1,32 @@
 (function(){
+	function fnSaveData(isHide){
+		if(Ext.getCmp("_tabledatamaintainpage_form").isValid()){
+			var datas = Ext.getCmp("_tabledatamaintainpage_form").getForm().getValues();
+			Tx.AjaxRequest.post({
+				cmd:"spring:baseSystemBusiness#fnSaveTableModelsConfig",
+				datas:{
+					datas:datas,
+					name:"tx_sys_grid",
+				},
+				dom:addData,
+				callback:function(result){
+					var hide = isHide || false;
+					if(hide==false){
+						Tx.MessageBox.info("数据保存成功!");
+					}else{
+						Tx.MessageBox.question("数据保存成功,是否刷新数据并隐藏弹出框?",function(){
+							grid.store.load();
+							addData.hide();
+							
+						});
+					}
+				}
+			});
+		}
+	}
   var grid_columns= Tx.auto.TxGrid.getTxGrid({
 /*	items:[{
-			text : "保存修改",
+			text : "字段",
 			iconCls : "fa fa-floppy-o",
 			handler:function(){
 				var selection = grid_columns.getView().getSelectionModel().getSelection()[0];
@@ -10,18 +35,17 @@
 		}],*/
 	queryname:"name",
 	columns:[{
-		header: '', 
-		xtype: 'rownumberer',  
-		align: 'center', 
-		sortable: false 
-	},{
+		text:"序号",
+		width:40,
+		dataIndex:"serialnumber",
+	}/*,{
 		text:"字段ID",
 		width:230,
 		dataIndex:"id",
-	},
+	}*/,
     {
         text: '字段名称',
-        flex: .8,
+        flex: .9,
         dataIndex: 'name',
     },{
         text: '字段类型',
@@ -54,6 +78,23 @@
        renderer:function(value){
        	return value=="0"? "日期":value=="1"?"日期时间":value=="2"?"下拉":value=="3"?"文本":"未知";
        }
+    },{
+    	text:"显示",
+        flex: .7,
+        dataIndex: 'isshow',
+        editor:{
+        	xtype:'combo',
+			editable:false,
+			width:85,
+			store:[
+				['0','显示'],
+				['1','隐藏'],
+			],
+			value:"0",
+        },
+	    renderer:function(value){
+        	return value=="0"? "显示":value=="1"?"隐藏":"未知";
+        }
     },{
         text: '只读',
         flex: .5,
@@ -118,7 +159,7 @@ var addData=  Ext.Window.create({
     				Tx.AjaxRequest.post({
 	    				cmd:"spring:baseSystemBusiness#fnGenerateFieldInformation",
 	    				datas:{
-	    					sql:Ext.getCmp("_usermaintainpage_form").getForm().getValues().querysql
+	    					sql:Ext.getCmp("_tabledatamaintainpage_form").getForm().getValues().querysql
 	    				},
 	    				dom:addData,
 	    				callback:function(result){
@@ -130,14 +171,18 @@ var addData=  Ext.Window.create({
 	    							//id:window.GUID().replace(/-/g, ""),
 	    							datatype:data.columnTypeName,
 	    							name:data.columnLabel,
-	    							gridid:Ext.getCmp("_usermaintainpage_form").getForm().getValues().id,
-	    							isready:"0"
+	    							gridid:Ext.getCmp("_tabledatamaintainpage_form").getForm().getValues().id,
+	    							isready:"0",//只读
+	    							isshow:data.columnLabel == "id"?"1":"0", //0显示
+	    							editor:data.columnTypeName == "datetime"?"1":"3", // 3文本编辑器
+	    							serialnumber:i+1
 	    						});
 	    					}
 	    					grid_columns.store.removeAll();
 	    					var store = grid_columns.store;
 	    					grid_columns.store.add(addDatas);
 	    					grid_columns.store.sync();
+	    					grid_columns.store.load();
 	    				}
 	    			});
     			});
@@ -147,17 +192,17 @@ var addData=  Ext.Window.create({
     		iconCls:"fa fa-leaf",
     		text: '美化SQL语句',
     		handler:function(){
-    			var datas = Ext.getCmp("_usermaintainpage_form").getForm().getValues();
+    			var datas = Ext.getCmp("_tabledatamaintainpage_form").getForm().getValues();
     			datas.querysql =sqlFormatter.format(datas.querysql);
     			datas.countsql =sqlFormatter.format(datas.countsql);
-    			Ext.getCmp("_usermaintainpage_form").getForm().setValues(datas);
+    			Ext.getCmp("_tabledatamaintainpage_form").getForm().setValues(datas);
     		}
     	},"-",{
     		xtype: 'button',
-    		iconCls:"fa fa-television",
-    		text: '预览表格',
+    		iconCls:"fa fa-floppy-o",
+    		text: "保存数据修改",
     		handler:function(){
-    			
+    			fnSaveData();
     		}
     	},"-","->","-",Ext.form.Label.create({
         	text:"$${language}->当前登入的方言"
@@ -165,7 +210,7 @@ var addData=  Ext.Window.create({
     }],
     items:[{
     	xtype:"form",
-    	id:"_usermaintainpage_form",
+    	id:"_tabledatamaintainpage_form",
     	layout : "form", // 整个大的表单是form布局
         labelAlign : "right",
     	items:[{
@@ -274,24 +319,7 @@ var addData=  Ext.Window.create({
 		text : "保存",
 		listeners:{
 			click:function(){
-				if(Ext.getCmp("_usermaintainpage_form").isValid()){
-					var datas = Ext.getCmp("_usermaintainpage_form").getForm().getValues();
-					Tx.AjaxRequest.post({
-						cmd:"spring:baseSystemBusiness#fnSaveTableModelsConfig",
-						datas:{
-							datas:datas,
-							name:"tx_sys_grid",
-						},
-						dom:addData,
-						callback:function(result){
-							debugger;
-							Tx.MessageBox.question("数据保存成功,是否刷新数据并隐藏弹出框?",function(){
-								grid.store.load();
-								addData.hide();
-							});
-						}
-					});
-				}
+				fnSaveData(true);
 			}
 		}
     },{
@@ -325,11 +353,11 @@ var grid = Tx.auto.TxGrid.getTxGrid({
 			datas.fnupdate="";
 			datas.fndelete="";
 			datas.id=GUID();
-			Ext.getCmp("_usermaintainpage_form").getForm().setValues(datas);
+			Ext.getCmp("_tabledatamaintainpage_form").getForm().setValues(datas);
 			var proxy = grid_columns.store.getProxy();
 			proxy.setExtraParams({
 				"conditionName":"gridid",
-				"conditionValue":Ext.getCmp("_usermaintainpage_form").getForm().getValues().id,
+				"conditionValue":Ext.getCmp("_tabledatamaintainpage_form").getForm().getValues().id,
 				"conditionSymbol":"2",
 			});
 			grid_columns.store.load();
@@ -337,7 +365,7 @@ var grid = Tx.auto.TxGrid.getTxGrid({
 		}
 	},{
 		text : "删除数据",
-		iconCls : "fa fa-plus-circle ",
+		iconCls : "fa fa-minus-circle",
 		handler:function(){
 			Tx.MessageBox.question("您确定要删除当前选中的数据,删除数据后无法重新恢复数据,是否确认?", function() {
 			var selection = grid.getView().getSelectionModel().getSelection()[0];
@@ -395,12 +423,12 @@ var grid = Tx.auto.TxGrid.getTxGrid({
 grid.addListener('rowdblclick', function(self, record, element, rowIndex, e, eOpts){
 	record.data.updatetime = Ext.util.Format.date(new Date(record.data.updatetime),"Y-m-d H:i:s");
 	record.data.createdate = Ext.util.Format.date(new Date(record.data.createdate),"Y-m-d H:i:s");
-	Ext.getCmp("_usermaintainpage_form").getForm().setValues(record.data);
+	Ext.getCmp("_tabledatamaintainpage_form").getForm().setValues(record.data);
 	addData.show();
 	var proxy = grid_columns.store.getProxy();
 	proxy.setExtraParams({
 		"conditionName":"gridid",
-		"conditionValue":Ext.getCmp("_usermaintainpage_form").getForm().getValues().id,
+		"conditionValue":Ext.getCmp("_tabledatamaintainpage_form").getForm().getValues().id,
 		"conditionSymbol":"2",
 	});
 	grid_columns.store.load();
@@ -424,8 +452,8 @@ var cmp = Ext.Panel.create({
 	layout : "border",
 	items:[center]
 });
-/*cmp._destroy=function(){
+cmp._destroy=function(){
 	addData.destroy();
-}*/
+}
 return cmp;
 })();

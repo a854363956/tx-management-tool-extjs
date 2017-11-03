@@ -10,7 +10,7 @@
 	<!-- Extjs 灰色皮肤 -->
 	<link href="component/extjs/build/classic/theme-gray/resources/theme-gray-all.css" rel="stylesheet" type="text/css" />
 	<!-- Extjs核心全部控件 -->
-	<script type="text/javascript" src="component/extjs/build/ext-all.js"></script>
+	<script type="text/javascript" src="component/extjs/build/ext-all.js"></script> 
 	<!-- Extjs中文国际化 -->
 	<script type="text/javascript" src="component/extjs/build/classic/locale/locale-zh_CN.js"></script>
 	<!-- Tx扩展的Extjs组件 -->
@@ -23,314 +23,324 @@
 	<!-- codemirror 源码编辑工具 -->
 	<link  rel="stylesheet" type="text/css" href="component/libs/codemirror/codemirror.css"/>
 	<script type="text/javascript" src="component/libs/codemirror/codemirror.js"></script>
+	<!-- 扩展Ext日期组件 -->
+	<script type="text/javascript">
+		Ext.Loader.setPath("Ext.ux.DateTimePicker","component/libs/DateTimePicker.js");
+		Ext.Loader.setPath("Ext.ux.DateTimeField","component/libs/DateTimeField.js");
+	</script>
 </head>
 <body>
 	<script type="text/javascript">
-		Ext.onReady(function () {
-			var tabscript ={};
-			
-			var isInitTreeMenu=false;
-			var top = Ext.toolbar.Toolbar.create({
-				region : "north",
-				items : [ "->", Ext.button.Button.create({
-				    iconCls : "fa fa-refresh fa-lg",
-				    text:"清理缓存"
-				}), "-", Ext.button.Button.create({
-				    iconCls : "fa fa-language",
-				    text : "选择业务方言"
-				}), "-", Ext.button.Button.create({
-				    iconCls : "fa fa-user-circle fa-lg",
-				    text : "我的资料维护"
-				}), "-", Ext.button.Button.create({
-				    iconCls : "fa fa-sign-out fa-lg",
-				    text : "退出系统",
-				    handler:function(){
-				    	Tx.MessageBox.question("是否确认退出当前系统?",function(){
-				    		//获取语言的映射关系
-							Tx.AjaxRequest.post({
-								cmd:"spring:baseSystemBusiness#fnOutLogin",
-								dom:null,
-								callback:function(result){
-									window.location.href = window.location.href;
-								}
-							});
-				    	});
-				    }
-				}) ]
-			});
-			var tree = Ext.panel.Panel.create({
-				region : 'west',
-				minWidth:120,
-				split : true,
-				hideHeaders : true,
-				width : "18%",
-				title:"功能菜单",
-				collapsible : true,
-				layout: 'accordion', //手风琴布局
-			    layoutConfig: {
-			        titleCollapse: false,
-			        animate: true,
-			        activeOnTop: true
-			    },
-			    items: []
-			});
-			var bottom =  Ext.toolbar.Toolbar.create({
-		        region : 'south',
-		        id:"_bottom",
-		        items : [Ext.form.Label.create({
-		        	id:"__username",
-		        	text:"登入帐号: ...... "
-		        }),'-',Ext.form.Label.create({
-		        	id:"__actual_name",
-		        	text:"用户名称: ...... "
-		        }), '-', Ext.form.Label.create({
-		        	id:"__rolename",
-		        	text:"所属角色: ...... "
-		        }), '->'],
-		    });
-			window._center = new Ext.TabPanel({
-		        region : 'center',
-		        id:"_center",
-		        //activeTab : 0,
-		        items : [],
-		        listeners:{
-		        	
-		        }
-		    });
-			window.view = Ext.Viewport.create({
-				id : "view",
-				layout : "border",
-				items : [ top, tree,bottom,_center]
-		    });
-			
-			//帐号不超过12位,密码不超过15位		
-			function onInitTreeMenu(){
-				if(isInitTreeMenu == true){
-					return;
-				}else{
-					Tx.AjaxRequest.post({
-						cmd:"spring:baseSystemBusiness#getTxSysMenu",
-						datas:{
-							father:"SYSTEM",
-						},
-						dom:tree,
-						callback:function(result){
-							if(!Ext.isChrome62){
-								Tx.MessageBox.question("系统检测您使用的浏览器不是Google Chrome版本62以上,为了提高系统的流畅性,以及稳定性和安全性,强烈建议使用(PS:Google Chrome版本62以上浏览器将完全保证系统的流畅,稳定和安全),是否确认下载?",function(){
-									window.open(window.location.href+"/install/ChromeSetup.exe"); 
-								});
-							}
-							//获取语言的映射关系
-							Tx.AjaxRequest.post({
-								cmd:"spring:baseSystemBusiness#fnGetLanguageAll",
-								dom:null,
-								callback:function(result){
-									window.$$LANGUAGE = Ext.JSON.decode(result.datas);
-								}
-							});
-							//获取用户的基本信息
-							Tx.AjaxRequest.post({
-								cmd:"spring:baseSystemBusiness#fnGetUserAndGroupInfo",
-								dom:null,
-								callback:function(result){
-									var datas = Ext.JSON.decode(result.datas);
-									window.$$USERINFO = datas.USERINFO;
-									window.$$USERROLEINFO = datas.USERROLEINFO;
-									Ext.getCmp("__username").setText("登入帐号: "+$$USERINFO.username);
-									Ext.getCmp("__actual_name").setText("用户名称: "+$$USERINFO.actual_name);
-									Ext.getCmp("__rolename").setText("所属角色: "+$$USERROLEINFO.role_name);
-								}
-							});
-							var datas = Ext.JSON.decode(result.datas).datas;
-							for(var i=0;i<datas.length;i++){
-								var data = datas[i];
-								var label = data.label;
-								var treech = Ext.tree.TreePanel.create({
-									title:label,
-									border : false,// 表框
-									autoScroll : true,// 自动滚动条
-									split : true,
-									animate : true,// 动画效果
-									rootVisible : false,// 根节点是否可见
-									split : true,
-									collapsible : true,
-									hideHeaders : true,
-									listeners:{
-										beforecelldblclick :function( self, td, cellIndex, record, tr, rowIndex, e, eOpts){
-											if(record.data.datas.leaf !=0){
-												var path = record.data.datas.path;
-												Tx.AjaxRequest.getPageCode(path,function(txt){
-													if (_center.queryById(record.id) != null) {
-														var cmp = _center.queryById(record.id);
-														cmp.show();
-													 }else{
-														 var cmp;
-														try{
-															var	cmp = eval(txt);
-															if(!Ext.isObject(cmp)){
-																Tx.MessageBox.error("页面代码编辑错误,返回的不是一个有效的组件对象!");
-																return;
-															}
-														}catch(e){
-															Tx.MessageBox.error("页面代码编辑错误,错误信息:"+e.message);
-															return;
-														}
-													 	tabscript[record.id]=cmp;
-														 _center.add({
-															title : record.get("text"),
-															id : record.id,
-															closable : true,
-															layout : "border",
-															items : [ cmp ],
-															listeners:{
-																close :function( panel, eOpts ){
-																	var _destroy = cmp._destroy || function(){};
-																	_destroy();
-													        	}
-															}
-													     }).show();
-													 }
-													
-												});
-											}
-											
-										},
-										afteritemexpand :function(node, deep, animal){
-											node.removeAll();
-											Tx.AjaxRequest.post({
-												cmd:"spring:baseSystemBusiness#getTxSysMenu",
-												datas:{
-													father:node.data.datas.id,
-												},
-												dom:null,
-												callback:function(result){
-													var datas = Ext.JSON.decode(result.datas).datas;
-													for(var i=0;i<datas.length;i++){
-														node.appendChild({
-															id:"id_"+datas[i].id,
-															leaf:datas[i].leaf == 0? false:true,
-															text:datas[i].label,
-															datas:datas[i]
-														});
-													}
-												}
-											});
-										},
-										beforerender :function(self,eOpts){
-											Tx.AjaxRequest.post({
-												cmd:"spring:baseSystemBusiness#getTxSysMenu",
-												datas:{
-													father:data.id,
-												},
-												dom:null,
-												callback:function(result){
-													isInitTreeMenu=true;
-													var datas = Ext.JSON.decode(result.datas).datas;
-													for(var i=0;i<datas.length;i++){
-														self.getRootNode().appendChild({
-															id:"id_"+datas[i].id,
-															leaf:datas[i].leaf == 0? false:true,
-															text:datas[i].label,
-															datas:datas[i]
-														});
-													}
-												}
-											});
-										}
+	Ext.application({
+		requires : [ 'Ext.ux.DateTimeField' ],
+		launch : function() {
+			Ext.onReady(function () {
+				var tabscript ={};
+				var isInitTreeMenu=false;
+				var top = Ext.toolbar.Toolbar.create({
+					region : "north",
+					items : [ "->", Ext.button.Button.create({
+					    iconCls : "fa fa-refresh fa-lg",
+					    text:"清理缓存"
+					}), "-", Ext.button.Button.create({
+					    iconCls : "fa fa-language",
+					    text : "选择业务方言"
+					}), "-", Ext.button.Button.create({
+					    iconCls : "fa fa-user-circle fa-lg",
+					    text : "我的资料维护"
+					}), "-", Ext.button.Button.create({
+					    iconCls : "fa fa-sign-out fa-lg",
+					    text : "退出系统",
+					    handler:function(){
+					    	Tx.MessageBox.question("是否确认退出当前系统?",function(){
+					    		//获取语言的映射关系
+								Tx.AjaxRequest.post({
+									cmd:"spring:baseSystemBusiness#fnOutLogin",
+									dom:null,
+									callback:function(result){
+										window.location.href = window.location.href;
 									}
 								});
-								tree.add(treech);
+					    	});
+					    }
+					}) ]
+				});
+				var tree = Ext.panel.Panel.create({
+					region : 'west',
+					minWidth:120,
+					split : true,
+					hideHeaders : true,
+					width : "18%",
+					title:"功能菜单",
+					collapsible : true,
+					layout: 'accordion', //手风琴布局
+				    layoutConfig: {
+				        titleCollapse: false,
+				        animate: true,
+				        activeOnTop: true
+				    },
+				    items: []
+				});
+				var bottom =  Ext.toolbar.Toolbar.create({
+			        region : 'south',
+			        id:"_bottom",
+			        items : [Ext.form.Label.create({
+			        	id:"__username",
+			        	text:"登入帐号: ...... "
+			        }),'-',Ext.form.Label.create({
+			        	id:"__actual_name",
+			        	text:"用户名称: ...... "
+			        }), '-', Ext.form.Label.create({
+			        	id:"__rolename",
+			        	text:"所属角色: ...... "
+			        }), '->'],
+			    });
+				window._center = new Ext.TabPanel({
+			        region : 'center',
+			        id:"_center",
+			        //activeTab : 0,
+			        items : [],
+			        listeners:{
+			        	
+			        }
+			    });
+				window.view = Ext.Viewport.create({
+					id : "view",
+					layout : "border",
+					items : [ top, tree,bottom,_center]
+			    });
+				
+				//帐号不超过12位,密码不超过15位		
+				function onInitTreeMenu(){
+					if(isInitTreeMenu == true){
+						return;
+					}else{
+						Tx.AjaxRequest.post({
+							cmd:"spring:baseSystemBusiness#getTxSysMenu",
+							datas:{
+								father:"SYSTEM",
+							},
+							dom:tree,
+							callback:function(result){
+								if(!Ext.isChrome62){
+									Tx.MessageBox.question("系统检测您使用的浏览器不是Google Chrome版本62以上,为了提高系统的流畅性,以及稳定性和安全性,强烈建议使用(PS:Google Chrome版本62以上浏览器将完全保证系统的流畅,稳定和安全),是否确认下载?",function(){
+										window.open(window.location.href+"/install/ChromeSetup.exe"); 
+									});
+								}
+								//获取语言的映射关系
+								Tx.AjaxRequest.post({
+									cmd:"spring:baseSystemBusiness#fnGetLanguageAll",
+									dom:null,
+									callback:function(result){
+										window.$$LANGUAGE = Ext.JSON.decode(result.datas);
+									}
+								});
+								//获取用户的基本信息
+								Tx.AjaxRequest.post({
+									cmd:"spring:baseSystemBusiness#fnGetUserAndGroupInfo",
+									dom:null,
+									callback:function(result){
+										var datas = Ext.JSON.decode(result.datas);
+										window.$$USERINFO = datas.USERINFO;
+										window.$$USERROLEINFO = datas.USERROLEINFO;
+										Ext.getCmp("__username").setText("登入帐号: "+$$USERINFO.username);
+										Ext.getCmp("__actual_name").setText("用户名称: "+$$USERINFO.actual_name);
+										Ext.getCmp("__rolename").setText("所属角色: "+$$USERROLEINFO.role_name);
+									}
+								});
+								var datas = Ext.JSON.decode(result.datas).datas;
+								for(var i=0;i<datas.length;i++){
+									var data = datas[i];
+									var label = data.label;
+									var treech = Ext.tree.TreePanel.create({
+										title:label,
+										border : false,// 表框
+										autoScroll : true,// 自动滚动条
+										split : true,
+										animate : true,// 动画效果
+										rootVisible : false,// 根节点是否可见
+										split : true,
+										collapsible : true,
+										hideHeaders : true,
+										listeners:{
+											beforecelldblclick :function( self, td, cellIndex, record, tr, rowIndex, e, eOpts){
+												if(record.data.datas.leaf !=0){
+													var path = record.data.datas.path;
+													Tx.AjaxRequest.getPageCode(path,function(txt){
+														if (_center.queryById(record.id) != null) {
+															var cmp = _center.queryById(record.id);
+															cmp.show();
+														 }else{
+															 var cmp;
+															try{
+																var	cmp = eval(txt);
+																if(!Ext.isObject(cmp)){
+																	Tx.MessageBox.error("页面代码编辑错误,返回的不是一个有效的组件对象!");
+																	return;
+																}
+															}catch(e){
+																console.error(e);
+																Tx.MessageBox.error("页面代码编辑错误,错误信息:"+e.message);
+																return;
+															}
+														 	tabscript[record.id]=cmp;
+															 _center.add({
+																title : record.get("text"),
+																id : record.id,
+																closable : true,
+																layout : "border",
+																items : [ cmp ],
+																listeners:{
+																	close :function( panel, eOpts ){
+																		var _destroy = cmp._destroy || function(){};
+																		_destroy();
+														        	}
+																}
+														     }).show();
+														 }
+														
+													});
+												}
+												
+											},
+											afteritemexpand :function(node, deep, animal){
+												node.removeAll();
+												Tx.AjaxRequest.post({
+													cmd:"spring:baseSystemBusiness#getTxSysMenu",
+													datas:{
+														father:node.data.datas.id,
+													},
+													dom:null,
+													callback:function(result){
+														var datas = Ext.JSON.decode(result.datas).datas;
+														for(var i=0;i<datas.length;i++){
+															node.appendChild({
+																id:"id_"+datas[i].id,
+																leaf:datas[i].leaf == 0? false:true,
+																text:datas[i].label,
+																datas:datas[i]
+															});
+														}
+													}
+												});
+											},
+											beforerender :function(self,eOpts){
+												Tx.AjaxRequest.post({
+													cmd:"spring:baseSystemBusiness#getTxSysMenu",
+													datas:{
+														father:data.id,
+													},
+													dom:null,
+													callback:function(result){
+														isInitTreeMenu=true;
+														var datas = Ext.JSON.decode(result.datas).datas;
+														for(var i=0;i<datas.length;i++){
+															self.getRootNode().appendChild({
+																id:"id_"+datas[i].id,
+																leaf:datas[i].leaf == 0? false:true,
+																text:datas[i].label,
+																datas:datas[i]
+															});
+														}
+													}
+												});
+											}
+										}
+									});
+									tree.add(treech);
+								}
 							}
-						}
-					});
+						});
+					}
+					
+				}
+				var fnLoginSystem=function(){
+					if(Ext.getCmp("loginForm").isValid()){
+						Tx.AjaxRequest.fnLoginSystem({
+							username:Ext.getCmp("loginForm").getForm().getValues().username,
+							password:Ext.getCmp("loginForm").getForm().getValues().password,
+							dom:window.loginWindow,
+							callback:function(result){
+								if(result.state == "SUCCESS"){
+									window.loginWindow.hide();
+									onInitTreeMenu();
+								}else{
+									Tx.MessageBox.error(result.msg);
+								}
+							}
+						});
+					}
 				}
 				
-			}
-			var fnLoginSystem=function(){
-				if(Ext.getCmp("loginForm").isValid()){
-					Tx.AjaxRequest.fnLoginSystem({
-						username:Ext.getCmp("loginForm").getForm().getValues().username,
-						password:Ext.getCmp("loginForm").getForm().getValues().password,
-						dom:window.loginWindow,
-						callback:function(result){
-							if(result.state == "SUCCESS"){
-								window.loginWindow.hide();
-								onInitTreeMenu();
-							}else{
-								Tx.MessageBox.error(result.msg);
+				//初始化菜单界面
+				onInitTreeMenu();
+				
+				
+				
+				window.loginWindow = Ext.Window.create({
+				    title : "请输入帐号密码登入!",
+				    closable : false,
+				    width : 350,
+				    height : 145,
+				    resizable : false, // 窗口可拖动改变大小;
+				    modal : true, // 设置弹窗之后屏蔽掉页面上所有的其他组件;
+				    plain : true, // 使窗体主体更融于框架颜色;
+				    listeners : {
+						show : function() {
+						    Ext.getCmp('username').focus(true);
+						}
+				    },
+				    buttons : [ {
+						xtype : "button",
+						text : "登入系统",
+						listeners:{
+							click:function(){
+								fnLoginSystem();
 							}
 						}
-					});
-				}
-			}
-			
-			//初始化菜单界面
-			onInitTreeMenu();
-			
-			
-			
-			window.loginWindow = Ext.Window.create({
-			    title : "请输入帐号密码登入!",
-			    closable : false,
-			    width : 350,
-			    height : 145,
-			    resizable : false, // 窗口可拖动改变大小;
-			    modal : true, // 设置弹窗之后屏蔽掉页面上所有的其他组件;
-			    plain : true, // 使窗体主体更融于框架颜色;
-			    listeners : {
-					show : function() {
-					    Ext.getCmp('username').focus(true);
-					}
-			    },
-			    buttons : [ {
-					xtype : "button",
-					text : "登入系统",
-					listeners:{
-						click:function(){
-							fnLoginSystem();
-						}
-					}
-			    } ],
-				    items : [ {
-					xtype : "form",
-					id : "loginForm",
-					defaultType : 'textfield',
-					items : [ {
-						    xtype : 'fieldset',
-						    title : '帐号密码',
-						    collapsible : false,
-						    autoHeight : true,
-						    autoWidth : true,
-						    defaults : {
-								allowBlank : false,
-								xtype : 'textfield'
-						    },
-						    items : [ {
-								fieldLabel : '帐号名称',
-								name : "username",
-								id : "username",
-								emptyText : '请输入用户名称',
-								blankText : '请输入用户名称',
-								maxLength: 12,
-						    }, {
-								fieldLabel : '帐号密码',
-								inputType : 'password',
-								maxLength: 15,
-								enableKeyEvents : true,
-								listeners : {
-								    keyup : function(self, e) {
-										if (e.getKey() === Ext.event.Event.ENTER) {
-											fnLoginSystem();
-										}
-								    }
-								},
-								name : "password",
-								blankText : '请输入用户密码'
-						    }]
-						} ]
-				    } ]
+				    } ],
+					    items : [ {
+						xtype : "form",
+						id : "loginForm",
+						defaultType : 'textfield',
+						items : [ {
+							    xtype : 'fieldset',
+							    title : '帐号密码',
+							    collapsible : false,
+							    autoHeight : true,
+							    autoWidth : true,
+							    defaults : {
+									allowBlank : false,
+									xtype : 'textfield'
+							    },
+							    items : [ {
+									fieldLabel : '帐号名称',
+									name : "username",
+									id : "username",
+									emptyText : '请输入用户名称',
+									blankText : '请输入用户名称',
+									maxLength: 12,
+							    }, {
+									fieldLabel : '帐号密码',
+									inputType : 'password',
+									maxLength: 15,
+									enableKeyEvents : true,
+									listeners : {
+									    keyup : function(self, e) {
+											if (e.getKey() === Ext.event.Event.ENTER) {
+												fnLoginSystem();
+											}
+									    }
+									},
+									name : "password",
+									blankText : '请输入用户密码'
+							    }]
+							} ]
+					    } ]
+				});
 			});
-		});
+		}
+	});
 	</script>
 </body>
 </html>

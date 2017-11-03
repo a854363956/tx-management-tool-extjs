@@ -9,6 +9,8 @@ import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import tx.database.common.utils.string.SqlStringUtils;
@@ -17,6 +19,7 @@ public class StringUtils {
 	private static String cmd = "^[a-zA-Z0-9_]+:[a-zA-Z0-9_]+#[a-zA-Z0-9_]+$";
 	private static String field="^[a-zA-Z0-9_]+$";
 	private static final String PRIVATE_PASSWORD = "a756268d-68d6-434e-9864-900186b96d51";
+	private static final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	/**
 	 * 判断当前的Cmd字符串是否符合规则,如果符合返回true 否则返回false
 	 * @param cmd
@@ -29,6 +32,13 @@ public class StringUtils {
 		}else {
 			return false;
 		}
+	}
+	/**
+	 * 获取当前系统时间
+	 * @return
+	 */
+	public static String getCurrentTimeDate() {
+		return df.format(new Date());
 	}
 	/**
 	 * 判断当前字符串是否是合法的字段名称

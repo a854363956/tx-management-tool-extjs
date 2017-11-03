@@ -104,7 +104,7 @@ public class BaseSystemBusiness {
 		String sqlid = j.getString("sqlid");
 		Map<String,Object> sqlparame = new HashMap<String,Object>();
 		sqlparame.put("gridid", sqlid);
-		List<Map<String,Object>> datas =txSessionFactory.getTxSession().select(getRealSQL("select s.*,e.label from tx_sys_grid_columns s  left join tx_base_language e on e.name = s.name  and e.languagecode=$${language} where gridid =${gridid} ",re), sqlparame).getDatas();
+		List<Map<String,Object>> datas =txSessionFactory.getTxSession().select(getRealSQL("select s.*,e.label from tx_sys_grid_columns s  left join tx_base_language e on e.name = s.name  and e.languagecode=$${language} where gridid =${gridid}  order by s.serialnumber ",re), sqlparame).getDatas();
 		rpe.setDatas(JSON.toJSONString(datas));
 		return rpe;
 	}
@@ -319,6 +319,7 @@ public class BaseSystemBusiness {
 		}else {
 			String tablename          = j.getString("name");
 			Map<String,Object> datas  = JSON.parseObject(j.getString("datas"),new TypeReference<Map<String,Object>>(){});
+			datas.put("updatetime", StringUtils.getCurrentTimeDate());
 			int i =txSessionFactory.getTxSession().save(tablename, datas);
 			ResponseEntitys rpe = new ResponseEntitys();
 			if(i!=0) {
