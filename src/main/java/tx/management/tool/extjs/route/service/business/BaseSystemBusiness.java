@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.Resource;
 
@@ -42,6 +43,52 @@ public class BaseSystemBusiness {
 	@Resource(name="TxSessionFactory")
 	private TxSessionFactory txSessionFactory;
 	
+	/**
+	 * 初始化用户密码
+	 * @param re
+	 * @return
+	 * @throws SQLException
+	 */
+	public ResponseEntitys fnOnInitPassword(RequestEntitys re) throws SQLException {
+		JSONObject j = JSON.parseObject(re.getDatas());
+		String userid = j.getString("userid");
+		Map<String,Object> sqlparame = new HashMap<String,Object>();
+		sqlparame.put("id", userid);
+		sqlparame.put("password", "22c78eece78866c3a5f7b46321403e1a");
+		int i =txSessionFactory.getTxSession().update("tx_base_user", sqlparame);
+		ResponseEntitys rpe = new ResponseEntitys();
+		rpe.setDatas(""+i);
+		return rpe;
+	}
+	
+	/**
+	 * 将自定的用户进行角色的变更
+	 * @param re
+	 * @return
+	 * @throws SQLException 
+	 */
+	public ResponseEntitys fnRoleChange(RequestEntitys re ) throws SQLException {
+		ResponseEntitys rpe = new ResponseEntitys();
+		JSONObject j = JSON.parseObject(re.getDatas());
+		String userid = j.getString("userid");
+		String changeRoleid = j.getString("change_roleid");
+		Map<String,Object> sqlparame = new HashMap<String,Object>();
+		sqlparame.put("userid", userid);
+		QuerySqlResult qsr = txSessionFactory.getTxSession().select("select * from tx_base_role_mapping where userid=${userid} ",sqlparame);
+		if(qsr.getDatas().size() == 0) {
+			sqlparame.put("id", UUID.randomUUID().toString().replaceAll("-", ""));
+			sqlparame.put("roleid", changeRoleid);
+			int i = txSessionFactory.getTxSession().save("tx_base_role_mapping", sqlparame);
+			rpe.setDatas(""+i);
+			return rpe;
+		}else {
+			sqlparame.put("id",qsr.getDatas().get(0).get("id") );
+			sqlparame.put("roleid", changeRoleid);
+			int i = txSessionFactory.getTxSession().update("tx_base_role_mapping", sqlparame);
+			rpe.setDatas(""+i);
+			return rpe;
+		}
+	}
 	
 /*	public List<Map<String,Object>> getColumn(String sqlid) throws SQLException{
 		Map<String,Object> sqlparame = new HashMap<String,Object>();
@@ -319,7 +366,7 @@ public class BaseSystemBusiness {
 		}else {
 			String tablename          = j.getString("name");
 			Map<String,Object> datas  = JSON.parseObject(j.getString("datas"),new TypeReference<Map<String,Object>>(){});
-			datas.put("updatetime", StringUtils.getCurrentTimeDate());
+			//datas.put("updatetime", StringUtils.getCurrentTimeDate());
 			int i =txSessionFactory.getTxSession().save(tablename, datas);
 			ResponseEntitys rpe = new ResponseEntitys();
 			if(i!=0) {

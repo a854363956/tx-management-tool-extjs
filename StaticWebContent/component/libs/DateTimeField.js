@@ -23,7 +23,7 @@ Ext.define('Ext.ux.DateTimeField', {
      * format.
      */
     altFormats: "Y-m-d H:i:s|c",
-    width: 270,
+    width: 220,
 
     collapseIf: function(e) {
         var me = this,

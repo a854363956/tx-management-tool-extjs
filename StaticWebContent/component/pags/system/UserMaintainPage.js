@@ -29,6 +29,7 @@
 					text : "新增字段方言",
 					iconCls : "fa fa-plus-circle",
 					handler:function(){
+						Ext.getCmp('__add_user_maintain_page_form').form.reset()
 						addData.show();
 				    }
 				},{
@@ -38,6 +39,7 @@
 						Tx.MessageBox.question("您确定要删除当前选中的数据,删除数据后无法重新恢复数据,是否确认?", function() {
 							var selection = grid.getView().getSelectionModel().getSelection()[0];
 							grid.store.remove(selection);
+							grid.store.load();
 						});
 					}
 				}],
@@ -45,7 +47,7 @@
 			     sqlid:"aaad775d0f164d28b726bf96cd2d9dbf"
 			 });
 			
-			var addData =Ext.Window.create({
+			var addData =Tx.Window.create({
 				title : "新增数据",
 			    closable : false,
 			    width : 750,

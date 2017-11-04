@@ -173,6 +173,12 @@
 														 }else{
 															 var cmp;
 															try{
+																for(var i=0;i<$$LANGUAGE.length;i++){
+																	var language = $$LANGUAGE[i];
+																	if(language.languagecode == $$USERINFO.language){
+																		txt=txt.replaceAll("\\$\\{"+language.name+"\\}",language.label);
+																	}
+																}
 																var	cmp = eval(txt);
 																if(!Ext.isObject(cmp)){
 																	Tx.MessageBox.error("页面代码编辑错误,返回的不是一个有效的组件对象!");
@@ -277,7 +283,7 @@
 				
 				
 				
-				window.loginWindow = Ext.Window.create({
+				window.loginWindow = Tx.Window.create({
 				    title : "请输入帐号密码登入!",
 				    closable : false,
 				    width : 350,

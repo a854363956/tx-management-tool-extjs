@@ -37,9 +37,4 @@ public class ExtJsAnnotationService extends HttpServlet{
 			os.close();
 		}
 	}
-	protected byte[] registeredGrid(byte[] bytes){
-		String txt = new String(bytes);
-		List<String> gridfn = SqlStringUtils.findRegex(txt, "");
-		return null;
-	}
 }

@@ -1,5 +1,8 @@
 (function(){
 	"use strict";
+	window.String.prototype.replaceAll  = function(s1,s2){     
+	    return this.replace(new RegExp(s1,"gm"),s2);     
+	}   
 	window.GUID = function() {
 		  return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 		    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
@@ -52,6 +55,18 @@
             },
 		}
 	});
+	Ext.define("Tx.Window",{
+		extend:"Ext.Window",
+		closeAction:"method-hide",
+		closable : false,
+	    resizable : false, // 窗口可拖动改变大小;
+	    modal : true, // 设置弹窗之后屏蔽掉页面上所有的其他组件;
+	    plain : true, // 使窗体主体更融于框架颜色;
+		onEsc:function(){
+			return;
+		}
+	});
+
 	Ext.define("Tx.data.proxy.Ajax",{
 		 alias: 'proxy.ajaxtx',
 		 extend:"Ext.data.proxy.Ajax",
@@ -431,6 +446,28 @@
 	Ext.define("Tx.auto.TxGrid",{
 		statics:{
 			/**
+			 * sqlid        sqlid
+			 * callback     回调函数
+			 * items        工具栏对象
+			 * queryname    查询对象的名称
+			 * height       表格高度
+			 */
+			getGrid:function(obj){
+				Tx.auto.TxGrid.getColumns({
+					sqlid:obj.sqlid,
+					callback:function(result){
+						var grid = Tx.auto.TxGrid.getTxGrid({
+							sqlid:obj.sqlid,
+							items:obj.items,
+							queryname:obj.queryname,
+							height:obj.height,
+							columns:result
+						});
+						obj.callback(grid);
+					}
+				});
+			},
+			/**
 			 * 根据配置获取TxGrid的列的信息
 			 * 	sqlid     sqlid
 			 *  callback  完成后的回调函数
@@ -457,17 +494,19 @@
 							}
 							var width = datas[i].width || null;
 							if(width != null){
-								if(Ext.isNumber(width)){
+								if(/^[0-9]+$/.test(width)){
 									column.width =window.parseInt(width);
 								}else{
 									column.width =width;
 								}
+									
 							}
 							
 							var exatt = datas[i].exatt || null;
 							if(exatt != null){
-								for(var att in width){
-									column[att]=width[att];
+								exatt=eval("var ______exatt="+exatt+"\n\t ______exatt");
+								for(var att in exatt){
+									column[att]=exatt[att];
 								}
 							}
 							var isready = datas[i].isready || null
@@ -713,7 +752,7 @@
 					autoSync : true,
 					remoteGroup : true,
 					leadingBufferZone : 300,
-					pageSize : 50,
+					pageSize : $$USERINFO.pagesize,
 					proxy : {
 					    type : 'ajaxtx',
 					    url:"ExtAjaxOfJsService/Request/POST",
@@ -747,6 +786,4 @@
 			}
 		}
 	});
-	
-
 })();

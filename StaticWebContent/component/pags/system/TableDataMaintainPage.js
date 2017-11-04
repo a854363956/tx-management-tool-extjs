@@ -2,6 +2,7 @@
 	function fnSaveData(isHide){
 		if(Ext.getCmp("_tabledatamaintainpage_form").isValid()){
 			var datas = Ext.getCmp("_tabledatamaintainpage_form").getForm().getValues();
+			datas.updatetime=Ext.util.Format.date(new Date(),"Y-m-d H:i:s");
 			Tx.AjaxRequest.post({
 				cmd:"spring:baseSystemBusiness#fnSaveTableModelsConfig",
 				datas:{
@@ -38,6 +39,9 @@
 		text:"序号",
 		width:40,
 		dataIndex:"serialnumber",
+		editor:{
+        	xtype:"textfield",
+        }
 	}/*,{
 		text:"字段ID",
 		width:230,
@@ -128,7 +132,7 @@
         flex: 2,
         dataIndex: 'exatt',
         editor:{
-        	xtype:"jstextarea",
+        	xtype:"textarea",
         }
     }],
     sqlid:"1"
@@ -139,7 +143,7 @@
 	});
 	*/
 
-var addData=  Ext.Window.create({
+var addData=  Tx.Window.create({
 	title : "SQL数据源",
     closable : false,
     width : "70%",
@@ -175,7 +179,8 @@ var addData=  Ext.Window.create({
 	    							isready:"0",//只读
 	    							isshow:data.columnLabel == "id"?"1":"0", //0显示
 	    							editor:data.columnTypeName == "datetime"?"1":"3", // 3文本编辑器
-	    							serialnumber:i+1
+	    							serialnumber:i+1,
+	    							width:data.columnTypeName == "datetime"?"130":""
 	    						});
 	    					}
 	    					grid_columns.store.removeAll();
@@ -370,6 +375,7 @@ var grid = Tx.auto.TxGrid.getTxGrid({
 			Tx.MessageBox.question("您确定要删除当前选中的数据,删除数据后无法重新恢复数据,是否确认?", function() {
 			var selection = grid.getView().getSelectionModel().getSelection()[0];
 				grid.store.remove(selection);
+				grid.store.load();
 		    });
 		}
 	}],

@@ -67,6 +67,13 @@
 		<url-pattern>/ExtAjaxOfJsService/Request/POST</url-pattern>
 	</servlet-mapping>
 	
-
+<!-- 	<servlet>
+		<servlet-name>ExtJsAnnotationService</servlet-name>
+		<servlet-class>tx.management.tool.extjs.route.service.ExtJsAnnotationService</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ExtJsAnnotationService</servlet-name>
+		<url-pattern>/component/pags/*</url-pattern>
+	</servlet-mapping> -->
 	
 </web-app>
