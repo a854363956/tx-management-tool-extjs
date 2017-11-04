@@ -418,7 +418,7 @@ public class BaseSystemBusiness {
 				String countsql = (String) result.get("countsql");
 				Map<String,Object> d = new HashMap<String,Object>();
 				List<Map<String,Object>> datas =txSessionFactory.getTxSession().selectPaging(getRealSQL(String.format("select * from (%s) as ______tables where %s ", sql,where),re), whereparames,limit,page).getDatas();
-				Long count = (Long) txSessionFactory.getTxSession().select(getRealSQL(String.format("%s where %s", countsql,where),re) , whereparames).getDatas().get(0).get("count");
+				Long count = (Long) txSessionFactory.getTxSession().select(getRealSQL(String.format("select count(1) count  from (%s) as ______tables where %s ", sql,where),re) , whereparames).getDatas().get(0).get("count");
 				d.put("count", count);
 				d.put("datas", datas);
 				rep.setDatas(JSON.toJSONString(d));

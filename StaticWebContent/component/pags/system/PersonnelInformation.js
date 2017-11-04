@@ -185,7 +185,12 @@
 							text:"初始化密码",
 							iconCls:"fa fa-recycle",
 							handler:function(){
+								
 								var data = grid.getView().getSelectionModel().getSelection()[0];
+								if(typeof(data) == "undefined"){
+	    							Tx.MessageBox.error("未选中人员数据,无法进行操作!");
+	    							return;
+	    						}
 								Tx.AjaxRequest.post({
 	    							cmd:"spring:baseSystemBusiness#fnOnInitPassword",
 	    							datas:{
@@ -222,11 +227,16 @@
 							text : "删除人员",
 							iconCls : "fa fa-minus-circle",
 							handler:function(){
-								Tx.MessageBox.question("您确定要删除当前选中的数据,删除数据后无法重新恢复数据,是否确认?", function() {
-									var selection = grid.getView().getSelectionModel().getSelection()[0];
+								var selection = grid.getView().getSelectionModel().getSelection()[0];
+								if(typeof(selection)!="undefined"){
+									Tx.MessageBox.question("您确定要删除当前选中的数据,删除数据后无法重新恢复数据,是否确认?", function() {
 										grid.store.remove(selection);
 										grid.store.load();
-								});
+									});
+								}else{
+									Tx.MesssageBox.error("未选中数据,无法进行操作!");
+								}
+								
 							}
 						}],
 					 	 columns:result,
@@ -257,7 +267,15 @@
 			    				listeners:{
 			    					click:function(){
 			    						var selection =  rolegrid.getView().getSelectionModel().getSelection()[0];
+			    						if(typeof(selection) == "undefined"){
+			    							Tx.MessageBox.error("未选中角色数据,无法进行操作!");
+			    							return;
+			    						}
 			    						var selectionm = grid.getView().getSelectionModel().getSelection()[0];
+			    						if(typeof(selectionm) == "undefined"){
+			    							Tx.MessageBox.error("未选中人员数据,无法进行操作!");
+			    							return;
+			    						}
 			    						var datas  = selection.data;
 			    						var datasm = selectionm.data;
 			    						Tx.AjaxRequest.post({

@@ -372,11 +372,16 @@ var grid = Tx.auto.TxGrid.getTxGrid({
 		text : "删除数据",
 		iconCls : "fa fa-minus-circle",
 		handler:function(){
-			Tx.MessageBox.question("您确定要删除当前选中的数据,删除数据后无法重新恢复数据,是否确认?", function() {
 			var selection = grid.getView().getSelectionModel().getSelection()[0];
-				grid.store.remove(selection);
-				grid.store.load();
-		    });
+			if(typeof(selection)!="undefined"){
+				Tx.MessageBox.question("您确定要删除当前选中的数据,删除数据后无法重新恢复数据,是否确认?", function() {
+					grid.store.remove(selection);
+					grid.store.load();
+				});
+			}else{
+				Tx.MesssageBox.error("未选中数据,无法进行操作!");
+			}
+			
 		}
 	}],
 	columns:[{

@@ -499,9 +499,7 @@
 								}else{
 									column.width =width;
 								}
-									
 							}
-							
 							var exatt = datas[i].exatt || null;
 							if(exatt != null){
 								exatt=eval("var ______exatt="+exatt+"\n\t ______exatt");
