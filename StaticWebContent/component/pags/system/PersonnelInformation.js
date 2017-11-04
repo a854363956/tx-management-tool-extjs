@@ -137,6 +137,7 @@
 					    			    fieldLabel : '${session_valid}',
 					    			 	name:"session_valid",
 					    		 },{
+					    			 	readOnly:true,
 					    			    xtype:"datetimefield",
 					    			    fieldLabel : '${create_time}',
 					    			 	name:"create_time",

@@ -8,7 +8,7 @@
 	<!-- font-awesome图标 -->
 	<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"/>
 	<!-- Extjs 灰色皮肤 -->
-	<link href="component/extjs/build/classic/theme-gray/resources/theme-gray-all.css" rel="stylesheet" type="text/css" />
+ 	<link href="component/extjs/build/classic/theme-gray/resources/theme-gray-all.css" rel="stylesheet" type="text/css" /> 
 	<!-- Extjs核心全部控件 -->
 	<script type="text/javascript" src="component/extjs/build/ext-all.js"></script> 
 	<!-- Extjs中文国际化 -->
@@ -35,11 +35,13 @@
 		requires : [ 'Ext.ux.DateTimeField' ],
 		launch : function() {
 			Ext.onReady(function () {
+				///阻止浏览器默认右键菜单
+				document.oncontextmenu = function () { return false }
 				var tabscript ={};
 				var isInitTreeMenu=false;
 				var top = Ext.toolbar.Toolbar.create({
 					region : "north",
-					items : [ "->", Ext.button.Button.create({
+					items : [ "->"/*, Ext.button.Button.create({
 					    iconCls : "fa fa-refresh fa-lg",
 					    text:"清理缓存"
 					}), "-", Ext.button.Button.create({
@@ -48,7 +50,7 @@
 					}), "-", Ext.button.Button.create({
 					    iconCls : "fa fa-user-circle fa-lg",
 					    text : "我的资料维护"
-					}), "-", Ext.button.Button.create({
+					})*/, "-", Ext.button.Button.create({
 					    iconCls : "fa fa-sign-out fa-lg",
 					    text : "退出系统",
 					    handler:function(){
@@ -93,7 +95,9 @@
 			        }), '-', Ext.form.Label.create({
 			        	id:"__rolename",
 			        	text:"所属角色: ...... "
-			        }), '->'],
+			        }),'-','->',Ext.form.Label.create({
+			        	text:"当前系统版本:0.0.1"
+			        })]
 			    });
 				window._center = new Ext.TabPanel({
 			        region : 'center',

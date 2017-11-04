@@ -24,6 +24,11 @@ public class ExtJsAnnotationService extends HttpServlet{
 		OutputStream   os = resp.getOutputStream();
 		List<String> p =SqlStringUtils.findRegex(path, "component.+");
 		String file = req.getSession().getServletContext().getRealPath("/")+ p.get(0);
+		File f = new File(file);
+		if(!f.exists()) {
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+			return;
+		}
 		FileInputStream fis =new FileInputStream(new File(file));
 		try {
 			byte[] bytes = StringUtils.readInputStreamByte(fis);

@@ -572,7 +572,7 @@
 				var queryname= new Array();
 				var defaultValue;
 				for(var i=0;i<columns.length;i++){
-					if(columns[i].xtype != "rownumberer"){
+					if(columns[i].xtype != "rownumberer" && columns[i].hidden !=true){
 						queryname.push([columns[i].dataIndex,columns[i].text]);
 						defaultValue=obj.queryname || columns[i].dataIndex;
 					}

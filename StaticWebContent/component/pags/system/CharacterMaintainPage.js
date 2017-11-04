@@ -68,6 +68,7 @@
 			center.add(rolegrid);
 			Tx.auto.TxGrid.getGrid({
 				sqlid:"905258cfbe6d49d0a240927453b25539",
+				queryname:"actual_name",
 				callback:function(result){
 					
 					//rowclick
@@ -98,8 +99,8 @@
 					addData =Tx.Window.create({
 						title : "新增数据",
 					    closable : false,
-					    width : 750,
-					    height : 105,
+					    width : 280,
+					    height : 150,
 					    resizable : false, // 窗口可拖动改变大小;
 					    modal : true, // 设置弹窗之后屏蔽掉页面上所有的其他组件;
 					    plain : true, // 使窗体主体更融于框架颜色;
@@ -111,7 +112,7 @@
 					    	items:[{
 						    	layout: {
 						    	    type: 'table',
-						    	    columns: 4
+						    	    columns: 1
 						    	},
 						    	border:0,
 						    	defaults:{

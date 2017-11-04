@@ -1,6 +1,5 @@
 package tx.management.tool.extjs.route.service.business;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
@@ -134,6 +133,7 @@ public class BaseSystemBusiness {
 	*/
 
 	
+	@SuppressWarnings("unchecked")
 	public String getRealSQL(String sql,RequestEntitys re) {
 		Map<String,Object> userinfo = (Map<String, Object>) re.getSession().getAttribute("USERINFO");
 		Integer language = (Integer) userinfo.get("language");
@@ -415,7 +415,7 @@ public class BaseSystemBusiness {
 			}else {
 				Map<String,Object> result = sqllist.get(0);
 				String sql      = (String) result.get("querysql");
-				String countsql = (String) result.get("countsql");
+				//String countsql = (String) result.get("countsql");
 				Map<String,Object> d = new HashMap<String,Object>();
 				List<Map<String,Object>> datas =txSessionFactory.getTxSession().selectPaging(getRealSQL(String.format("select * from (%s) as ______tables where %s ", sql,where),re), whereparames,limit,page).getDatas();
 				Long count = (Long) txSessionFactory.getTxSession().select(getRealSQL(String.format("select count(1) count  from (%s) as ______tables where %s ", sql,where),re) , whereparames).getDatas().get(0).get("count");
@@ -523,7 +523,7 @@ public class BaseSystemBusiness {
 		Map<String,Object> sqlparames = new HashMap<String,Object>();
 		sqlparames.put("father", father);
 		sqlparames.put("roleid", re.getRoleId());
-		QuerySqlResult r = txSessionFactory.getTxSession().select(getRealSQL("select u.* from tx_sys_menu_authorization n left join tx_sys_menu u on n.menuid = u.id where n.roleid =${roleid} and u.father =${father}",re), sqlparames);
+		QuerySqlResult r = txSessionFactory.getTxSession().select(getRealSQL("select u.* from tx_sys_menu_authorization n left join tx_sys_menu u on n.menuid = u.id where n.roleid =${roleid} and u.father =${father} order by u.sorting ",re), sqlparames);
 		ResponseEntitys rep = new ResponseEntitys();
 		rep.setDatas(JSON.toJSONString(r));
 		return rep;
