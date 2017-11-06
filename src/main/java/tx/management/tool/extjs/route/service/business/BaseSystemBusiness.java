@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.annotation.Resource;
 
@@ -41,7 +40,56 @@ import tx.management.tool.extjs.utils.StringUtils;
 public class BaseSystemBusiness {
 	@Resource(name="TxSessionFactory")
 	private TxSessionFactory txSessionFactory;
-	
+	/**
+	 * 创建节点菜单
+	 * @param re
+	 * @return
+	 * @throws SQLException
+	 */
+	public ResponseEntitys fnCreateMenuNode(RequestEntitys re) throws SQLException {
+		ResponseEntitys rpe = new ResponseEntitys();
+		JSONObject j = JSON.parseObject(re.getDatas());
+		String father = j.getString("father");
+		String nodename = j.getString("name");
+		Map<String,Object> sqlparame = new HashMap<String,Object>();
+		sqlparame.put("father", father);
+		List<Map<String,Object>> l =txSessionFactory.getTxSession().select("select max(sorting) as max_  from tx_sys_menu where father =${father}", sqlparame).getDatas();
+		String max = "";
+		if( l.size() ==0) {
+			max="0";
+		}else {
+			Object max_=l .get(0).get("max_");
+			max=""+( max_==null?0:((Integer)max_)+1);
+		}
+		sqlparame.clear();
+		sqlparame.put("id", StringUtils.getUUID());
+		sqlparame.put("path", "0");
+		sqlparame.put("icon_class", "default");
+		sqlparame.put("sorting", max);
+		sqlparame.put("leaf", "0");
+		sqlparame.put("father", father);
+		sqlparame.put("label", nodename);
+		int i= txSessionFactory.getTxSession().create("tx_sys_menu", sqlparame);
+		rpe.setDatas(""+i);
+		return rpe;
+	}
+	public ResponseEntitys fnGetMaxMenuSorting(RequestEntitys re) throws SQLException {
+		ResponseEntitys rpe = new ResponseEntitys();
+		JSONObject j = JSON.parseObject(re.getDatas());
+		String father = j.getString("father");
+		Map<String,Object> sqlparame = new HashMap<String,Object>();
+		sqlparame.put("father", father);
+		List<Map<String,Object>> l =txSessionFactory.getTxSession().select("select max(sorting) as max_  from tx_sys_menu where father =${father}", sqlparame).getDatas();
+		String max = "";
+		if( l.size() ==0) {
+			max="0";
+		}else {
+			Object max_=l .get(0).get("max_");
+			max=""+( max_==null?0:((Integer)max_)+1);
+		}
+		rpe.setDatas(max);
+		return rpe;
+	}
 	/**
 	 * 初始化用户密码
 	 * @param re
@@ -75,7 +123,7 @@ public class BaseSystemBusiness {
 		sqlparame.put("userid", userid);
 		QuerySqlResult qsr = txSessionFactory.getTxSession().select("select * from tx_base_role_mapping where userid=${userid} ",sqlparame);
 		if(qsr.getDatas().size() == 0) {
-			sqlparame.put("id", UUID.randomUUID().toString().replaceAll("-", ""));
+			sqlparame.put("id",StringUtils.getUUID());
 			sqlparame.put("roleid", changeRoleid);
 			int i = txSessionFactory.getTxSession().save("tx_base_role_mapping", sqlparame);
 			rpe.setDatas(""+i);
@@ -393,6 +441,8 @@ public class BaseSystemBusiness {
 		//Integer start = pagingParams.getInteger("pagingParams");
 		Integer limit = pagingParams.getInteger("limit");
 		String conditionName   =pagingParams.getString("conditionName");
+		
+		List<Map<String,Object>> and = JSON.parseObject(pagingParams.getString("and"),new TypeReference<List<Map<String,Object>>>(){});
 		if(conditionName!=null && !"".equals(conditionName)) {
 			if(!StringUtils.testIsEffectiveField(conditionName)) {
 				throw TxInvokingException.throwTxInvokingExceptions("TX-000009");
@@ -406,6 +456,19 @@ public class BaseSystemBusiness {
 				whereparames.put(conditionName, "%"+conditionValue+"%");
 			}else {
 				whereparames.put(conditionName, conditionValue);
+			}
+			if(and!=null) {
+				for(Map<String,Object> m : and) {
+					if(!StringUtils.testIsEffectiveField((String)m.get("conditionName"))) {
+						throw TxInvokingException.throwTxInvokingExceptions("TX-000009");
+					}
+					if("0".equals(m.get("conditionSymbol")) || "1".equals(m.get("conditionSymbol"))) {
+						whereparames.put((String)m.get("conditionName"), "%"+m.get("conditionValue")+"%");
+					}else {
+						whereparames.put((String)m.get("conditionName"), m.get("conditionValue"));
+					}
+					where+=" and "+String.format(getSQLMappingSymbol((String)m.get("conditionSymbol")), m.get("conditionName"),m.get("conditionName"));
+				}
 			}
 			Map<String,Object> sqlparames = new HashMap<String,Object>();
 			sqlparames.put("id", sqlid);
@@ -520,10 +583,16 @@ public class BaseSystemBusiness {
 		String datas = re.getDatas();
 		JSONObject object =JSON.parseObject(datas);
 		String father = object.getString("father");
+		String permissions = object.getString("permissions"); 
 		Map<String,Object> sqlparames = new HashMap<String,Object>();
 		sqlparames.put("father", father);
-		sqlparames.put("roleid", re.getRoleId());
-		QuerySqlResult r = txSessionFactory.getTxSession().select(getRealSQL("select u.* from tx_sys_menu_authorization n left join tx_sys_menu u on n.menuid = u.id where n.roleid =${roleid} and u.father =${father} order by u.sorting ",re), sqlparames);
+		QuerySqlResult r  = null;
+		if(!"0".equals(permissions)) {
+			sqlparames.put("roleid", re.getRoleId());
+			r = txSessionFactory.getTxSession().select(getRealSQL("select u.* from tx_sys_menu_authorization n left join tx_sys_menu u on n.menuid = u.id where n.roleid =${roleid} and u.father =${father} order by u.sorting ",re), sqlparames);
+		}else {
+			r = txSessionFactory.getTxSession().select(getRealSQL("select * from  tx_sys_menu where  father =${father} order by sorting ",re), sqlparames);
+		}
 		ResponseEntitys rep = new ResponseEntitys();
 		rep.setDatas(JSON.toJSONString(r));
 		return rep;

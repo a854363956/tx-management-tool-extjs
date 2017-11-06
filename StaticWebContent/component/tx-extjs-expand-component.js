@@ -39,6 +39,13 @@
                     icon: Ext.MessageBox.WARNING
                 });
             },
+            prompt:function(message,onclick){
+            	Ext.MessageBox.prompt("系统消息",message,function(state,txt){
+            		if(state == "ok"){
+            			onclick(txt);
+            		}
+            	});
+            },
             question:function(message,onclick){
                 Ext.MessageBox.show({
                     title: '系统消息',

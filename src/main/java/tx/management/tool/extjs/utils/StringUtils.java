@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import tx.database.common.utils.string.SqlStringUtils;
 
@@ -32,6 +33,9 @@ public class StringUtils {
 		}else {
 			return false;
 		}
+	}
+	public static String getUUID() {
+		return UUID.randomUUID().toString().replaceAll("-", "");
 	}
 	/**
 	 * 获取当前系统时间
