@@ -35,6 +35,69 @@
 				});
  		}
 	 }
+	 var updateData =Tx.Window.create({
+			title : "修改菜单信息",
+		    closable : false,
+		    width : 280,
+		    height : 130,
+		    resizable : false, // 窗口可拖动改变大小;
+		    modal : true, // 设置弹窗之后屏蔽掉页面上所有的其他组件;
+		    plain : true, // 使窗体主体更融于框架颜色;
+		    items:[{
+		    	xtype:"form",
+		    	id:"__menu_data_maintenance_page_update_form",
+		    	layout : "form", // 整个大的表单是form布局
+		        labelAlign : "right",
+		    	items:[{
+			    	layout: {
+			    	    type: 'table',
+			    	    columns: 1
+			    	},
+			    	border:0,
+			    	defaults:{
+			    		allowBlank : false,
+						xtype : 'textfield',
+						padding :"0px 0px 0px 4px",
+						labelWidth:65,
+			    	},
+			    	items:[{
+			    		fieldLabel : '${id}',
+		    			name:"id",
+		    			hidden:true,
+			    	},{
+			    			fieldLabel : '${label}',
+			    			name:"label",
+		    		 },{
+		    			 	fieldLabel : '${sorting}',
+		    			 	name:"sorting",
+		    		 }]
+		    	}]
+		    }],
+		    buttons:[{
+				xtype : "button",
+				text : "保存",
+				listeners:{
+					click:function(){
+						/*if(Ext.getCmp("__add_user_maintain_page_form").isValid()){
+							var datas = Ext.getCmp("__add_user_maintain_page_form").getForm().getValues()
+							var store = grid.store;
+							grid.store.add(datas);
+							grid.store.sync();
+							addData.hide();
+						}*/
+					}
+				}
+		    },{
+		    	xtype:"button",
+		    	text:"返回",
+		    	listeners:{
+		    		click:function(){
+		    			updateData.hide();
+		    		}
+		    	}
+		   }]
+		});
+	 
 	 var addData =Tx.Window.create({
 			title : "新增数据",
 		    closable : false,
@@ -128,7 +191,17 @@
 	        	text:'修改属性',
 	        	iconCls:"fa fa-pencil-square",
 	            handler:function(){
-	                Ext.Msg.alert("系统提示","测试");
+	            	
+	            	if(typeof(current_node) == "undefined"){
+	            		Tx.MessageBox.error("请选择点击一行后,在进行操作!");
+	            		return;
+	            	}
+	            	Ext.getCmp('__menu_data_maintenance_page_update_form').form.reset()
+					Ext.getCmp("__menu_data_maintenance_page_update_form").getForm().setValues({
+						sorting:current_node.sorting,
+						label:current_node.label,
+					});
+	            	updateData.show();
 	            }
 	        },"-",{
 	            text:'创建目录',

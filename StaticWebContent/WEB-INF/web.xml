@@ -70,6 +70,7 @@
  	<servlet>
 		<servlet-name>ExtJsAnnotationService</servlet-name>
 		<servlet-class>tx.management.tool.extjs.route.service.ExtJsAnnotationService</servlet-class>
+		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>ExtJsAnnotationService</servlet-name>
