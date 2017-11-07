@@ -195,6 +195,11 @@
 	Ext.define("Tx.AjaxRequest",{
 		statics:{
 			fnDownloadFile:function(sqlid){
+				var loadMarsk = new Ext.LoadMask(window._center,{
+				   msg : '正在下载文件,请稍后......',
+				   removeMask : true// 完成后移除
+				});
+				loadMarsk.show();
 				if($("#_download_object_file_cfc4e88780ee4ec68cfb9fdc839211c0").length == 0){
 					var dom = ""+
 						"<form id='_download_object_file_cfc4e88780ee4ec68cfb9fdc839211c0' action='ExtAjaxOfJsService/Request/POST' method='post' target='targetIfr' style='display:none'></form>"+   
@@ -205,6 +210,8 @@
 					sqlid:sqlid
 				}))
 				$("#_download_object_file_cfc4e88780ee4ec68cfb9fdc839211c0").attr("action", "ExtAjaxOfJsService/Request/POST?download=true&request_date="+new Date().getTime()+"&cmd=spring%3AbaseSystemBusiness%23fnDownloadFile&datas="+datas);
+				$("#_download_object_file_cfc4e88780ee4ec68cfb9fdc839211c0").submit();
+				loadMarsk.hide();
 			},
 			/**
 			 *  用户登入的接口
