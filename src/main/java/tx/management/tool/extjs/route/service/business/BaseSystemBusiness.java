@@ -42,6 +42,133 @@ import tx.management.tool.extjs.utils.StringUtils;
 public class BaseSystemBusiness {
 	@Resource(name="TxSessionFactory")
 	private TxSessionFactory txSessionFactory;
+	
+	/**
+	 * 对菜单进行授权操作
+	 * @param re
+	 * @return
+	 * @throws SQLException
+	 */
+	public ResponseEntitys fnAuthorizeMmenu(RequestEntitys re) throws SQLException {
+		JSONObject j = JSON.parseObject(re.getDatas());
+		String state = j.getString("state");
+		String id    = j.getString("id");
+		Map<String,Object> sqlparame = new HashMap<String,Object>();
+		sqlparame.put("id", id);
+		sqlparame.put("state", state);
+		int i =txSessionFactory.getTxSession().update("tx_sys_menu_authorization", sqlparame);
+		ResponseEntitys rpe = new ResponseEntitys();
+		rpe.setDatas(""+i);
+		return rpe;
+	}
+	/**
+	 * 删除角色信息
+	 * @param re
+	 * @return
+	 * @throws Exception
+	 */
+	public ResponseEntitys fnDeleteCharacter(RequestEntitys re) throws Exception {
+		Transactional t = null; 
+		try {
+			 int i=0;
+			 t=txSessionFactory.getTxSession().openTransactional();
+			 String id =JSON.parseObject(re.getDatas()).getString("id");
+			 if(id == null || "".equals(id)) {
+				throw TxInvokingException.throwTxInvokingExceptions("TX-000011");
+			 }else {
+				i=txSessionFactory.getTxSession().delete("tx_base_role", id);
+				Map<String,Object> parames = new HashMap<String,Object>();
+				parames.put("roleid", id);
+				i+=txSessionFactory.getTxSession().delete("tx_sys_menu_authorization", parames);
+			 }
+			 ResponseEntitys res = new ResponseEntitys();
+			 res.setDatas(""+i);
+			 t.commit();
+			 return res;
+		} catch (Exception e) {
+			if(t!=null) {
+				t.rollback();
+			}
+			throw e;
+		} 
+	}
+	/**
+	 * 删除菜单节点
+	 * @param re
+	 * @return
+	 * @throws TxInvokingException
+	 * @throws SQLException
+	 */
+	public ResponseEntitys fnDeleteMenu(RequestEntitys re) throws TxInvokingException, SQLException {
+		Transactional t = null; 
+		try {
+			t=txSessionFactory.getTxSession().openTransactional();
+			int i =0;
+			String id =JSON.parseObject( re.getDatas()).getString("id");
+			if(id == null || "".equals(id)) {
+				throw TxInvokingException.throwTxInvokingExceptions("TX-000011");
+			}else {
+				int num = txSessionFactory.getTxSession().delete("tx_sys_menu", id);
+				i+=num;
+				Map<String,Object> sqlparame = new HashMap<String,Object>();
+				sqlparame.put("menuid", id);
+				List<Map<String,Object>> datas = txSessionFactory.getTxSession().select("select * from tx_sys_menu_authorization where menuid =${menuid} ", sqlparame).getDatas();
+				for(Map<String,Object> m : datas) {
+					num = txSessionFactory.getTxSession().delete("tx_sys_menu",(String) m.get("id"));
+					i+=num;
+				}
+				ResponseEntitys rep = new ResponseEntitys();
+				rep.setDatas(""+i);
+				 t.commit();
+				return rep;
+			}
+		} catch (Exception e) {
+			if(t!=null) {
+				t.rollback();
+			}
+			throw e;
+		}
+
+	}
+	
+	/**
+	 * 添加角色信息
+	 * @param re
+	 * @return
+	 * @throws SQLException 
+	 */
+	public ResponseEntitys fnAddRole(RequestEntitys re) throws SQLException {
+		Transactional t = null;
+		int i=0;
+		try {
+			Map<String,Object> parame = JSON.parseObject(re.getDatas());
+			String roleid = StringUtils.getUUID();
+			parame.put("id", roleid);
+			t=txSessionFactory.getTxSession().openTransactional();
+			
+			int n_ =txSessionFactory.getTxSession().create("tx_base_role", parame);
+			i+=n_;
+			List<Map<String,Object>> datas =txSessionFactory.getTxSession().select("select * from tx_sys_menu", null).getDatas();
+			for(Map<String,Object> map : datas) {
+				Map<String,Object> ma = new HashMap<String,Object>();
+				ma.put("id", StringUtils.getUUID());
+				ma.put("roleid", roleid);
+				ma.put("menuid", map.get("id"));
+				ma.put("state", 1);
+				int num = txSessionFactory.getTxSession().create("tx_sys_menu_authorization", ma);
+				i+=num;
+			}
+			ResponseEntitys rpe = new ResponseEntitys();
+			rpe.setDatas(""+i);
+			t.commit();
+			return rpe;
+		}catch (Exception e) {
+			if(t!=null) {
+				t.rollback();
+			}
+			throw e;
+		}
+	}
 	/**
 	 * 根据sqlid 导出Excel数据
 	 * @param re
@@ -79,11 +206,30 @@ public class BaseSystemBusiness {
 	 * @throws SQLException 
 	 */
 	public ResponseEntitys fnSaveMenuNode(RequestEntitys re) throws SQLException {
-		Map<String,Object> parame= JSON.parseObject(re.getDatas(),new TypeReference<Map<String,Object>>(){});
-		int i =txSessionFactory.getTxSession().save("tx_sys_menu", parame);
-		ResponseEntitys rpe = new ResponseEntitys();
-		rpe.setDatas(""+i);
-		return rpe;
+		Transactional t =null ;
+		try {
+			t=txSessionFactory.getTxSession().openTransactional();
+			Map<String,Object> parame= JSON.parseObject(re.getDatas(),new TypeReference<Map<String,Object>>(){});
+			int i =txSessionFactory.getTxSession().create("tx_sys_menu", parame);  
+			ResponseEntitys rpe = new ResponseEntitys();
+			List<Map<String,Object>> result = txSessionFactory.getTxSession().select("select * from tx_base_role", null).getDatas();
+			for(Map<String,Object> m :result) {
+				Map<String,Object> ma = new HashMap<String,Object>();
+				ma.put("id", StringUtils.getUUID());
+				ma.put("roleid", m.get("id"));
+				ma.put("menuid", parame.get("id"));
+				ma.put("state", 1);
+				int num = txSessionFactory.getTxSession().create("tx_sys_menu_authorization", ma);
+				i+=num;
+			}
+			rpe.setDatas(""+i);
+			t.commit();
+			return rpe;
+		} catch (Exception e) {
+			t.rollback();
+			throw e;
+		}
+		
 	}
 	/**
 	 * 创建节点菜单

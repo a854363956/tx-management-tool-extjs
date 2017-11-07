@@ -16,7 +16,7 @@
 	});
 	var b =  Ext.Panel.create({
 		region : 'south',
-		height : "60%",
+		height : "70%",
 		layout:{  
 	        type:'hbox',  
 	        align : 'stretch',  
@@ -54,8 +54,17 @@
 				var selection = grid.getView().getSelectionModel().getSelection()[0];
 				if(typeof(selection)!="undefined"){
 					Tx.MessageBox.question("您确定要删除当前选中的数据,删除数据后无法重新恢复数据,是否确认?", function() {
-						grid.store.remove(selection);
-						grid.store.load();
+						Tx.AjaxRequest.post({
+							cmd:"spring:baseSystemBusiness#fnDeleteCharacter",
+							datas:{
+								id:selection.data.id
+							},
+							dom:grid,
+							callback:function(result){
+								Tx.MessageBox.info("删除数据成功!");
+								grid.store.load();
+							}
+						});
 					});
 				}else{
 					Tx.MesssageBox.error("未选中数据,无法进行操作!");
@@ -148,12 +157,20 @@
 							text : "保存",
 							listeners:{
 								click:function(){
-									debugger;
 									if(Ext.getCmp("__character_maintain_page_form").isValid()){
 										var datas = Ext.getCmp("__character_maintain_page_form").getForm().getValues()
-										var store = rolegrid.store;
+									/*	var store = rolegrid.store;
 										rolegrid.store.add(datas);
-										rolegrid.store.sync();
+										rolegrid.store.sync();*/
+										Tx.AjaxRequest.post({
+											cmd:"spring:baseSystemBusiness#fnAddRole",
+											datas:datas,
+											dom:addData,
+											callback:function(result){
+												Tx.MessageBox.info("保存成功!");
+												rolegrid.store.load();
+											}
+										});
 										addData.hide();
 									}
 								}

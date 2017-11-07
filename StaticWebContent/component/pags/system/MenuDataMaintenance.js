@@ -434,8 +434,19 @@
 				var selection = grid.getView().getSelectionModel().getSelection()[0];
 				if(typeof(selection)!="undefined"){
 					Tx.MessageBox.question("您确定要删除当前选中的数据,删除数据后无法重新恢复数据,是否确认?", function() {
-						grid.store.remove(selection);
-						grid.store.load();
+						Tx.AjaxRequest.post({
+							cmd:"spring:baseSystemBusiness#fnDeleteMenu",
+							datas:{
+								id:selection.data.id,
+							},
+							dom:grid,
+							callback:function(result){
+								Tx.MessageBox.info("删除数据成功!",function(){
+									grid.store.load();
+								});
+							}
+						});
+						
 					});
 				}else{
 					Tx.MesssageBox.error("未选中数据,无法进行操作!");
