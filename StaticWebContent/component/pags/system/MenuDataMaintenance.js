@@ -61,9 +61,10 @@
 						labelWidth:65,
 			    	},
 			    	items:[{
-			    		fieldLabel : '${id}',
-		    			name:"id",
-		    			hidden:true,
+			    			fieldLabel : '${id}',
+		    				name:"id",
+		    				hidden:true,
+		    				allowBlank:true,
 			    	},{
 			    			fieldLabel : '${label}',
 			    			name:"label",
@@ -78,13 +79,24 @@
 				text : "保存",
 				listeners:{
 					click:function(){
-						/*if(Ext.getCmp("__add_user_maintain_page_form").isValid()){
-							var datas = Ext.getCmp("__add_user_maintain_page_form").getForm().getValues()
-							var store = grid.store;
-							grid.store.add(datas);
-							grid.store.sync();
-							addData.hide();
-						}*/
+						if(Ext.getCmp("__menu_data_maintenance_page_update_form").isValid()){
+							var datas = Ext.getCmp("__menu_data_maintenance_page_update_form").getForm().getValues()
+							Tx.AjaxRequest.post({
+								cmd:"spring:baseSystemBusiness#fnSaveMenuNode",
+								datas:datas,
+								dom:updateData,
+								callback:function(result){
+									if(result.datas="1"){
+										Tx.MessageBox.info("保存成功,受影响行数["+result.datas+"]",function(){
+											refresh();
+											updateData.hide();
+										});
+									}else{
+										Tx.MessageBox.error("保存失败,受影响行数["+result.datas+"]");
+									}
+								}
+							});
+						}
 					}
 				}
 		    },{
@@ -143,13 +155,27 @@
 				text : "保存",
 				listeners:{
 					click:function(){
-						/*if(Ext.getCmp("__add_user_maintain_page_form").isValid()){
-							var datas = Ext.getCmp("__add_user_maintain_page_form").getForm().getValues()
-							var store = grid.store;
-							grid.store.add(datas);
-							grid.store.sync();
-							addData.hide();
-						}*/
+						if(Ext.getCmp("__menu_data_maintenance_page_form").isValid()){
+							var datas = Ext.getCmp("__menu_data_maintenance_page_form").getForm().getValues()
+							datas.id=window.GUID();
+							datas.leaf="1";
+							datas.father = current_node.id;
+							Tx.AjaxRequest.post({
+								cmd:"spring:baseSystemBusiness#fnSaveMenuNode",
+								datas:datas,
+								dom:addData,
+								callback:function(result){
+									if(result.datas="1"){
+										Tx.MessageBox.info("保存成功,受影响行数["+result.datas+"]",function(){
+											grid.store.load();
+											addData.hide();
+										});
+									}else{
+										Tx.MessageBox.error("保存失败,受影响行数["+result.datas+"]");
+									}
+								}
+							});
+						}
 					}
 				}
 		    },{
@@ -198,6 +224,7 @@
 	            	}
 	            	Ext.getCmp('__menu_data_maintenance_page_update_form').form.reset()
 					Ext.getCmp("__menu_data_maintenance_page_update_form").getForm().setValues({
+						id:current_node.id,
 						sorting:current_node.sorting,
 						label:current_node.label,
 					});
@@ -395,6 +422,24 @@
 					}
 				});
 				
+			}
+		},"-",{
+			text:"删除数据(谨慎操作,删除后无法恢复)",
+			iconCls : "fa fa-minus-circle",
+			handler:function(){
+				if(typeof(current_node) == "undefined"){
+            		Tx.MessageBox.error("请选择点击一行后,在进行操作!");
+            		return;
+            	}
+				var selection = grid.getView().getSelectionModel().getSelection()[0];
+				if(typeof(selection)!="undefined"){
+					Tx.MessageBox.question("您确定要删除当前选中的数据,删除数据后无法重新恢复数据,是否确认?", function() {
+						grid.store.remove(selection);
+						grid.store.load();
+					});
+				}else{
+					Tx.MesssageBox.error("未选中数据,无法进行操作!");
+				}
 			}
 		}],
 		queryname:"label",

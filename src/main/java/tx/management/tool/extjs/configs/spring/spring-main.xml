@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans 
-	xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	xmlns:p="http://www.springframework.org/schema/p"
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:mvc="http://www.springframework.org/schema/mvc"
 	xsi:schemaLocation="
@@ -13,25 +11,25 @@
                 http://www.springframework.org/schema/mvc
                 http://www.springframework.org/schema/mvc/spring-mvc.xsd
                 ">
-	<context:component-scan base-package="tx.management.tool.extjs"/>
+	<context:component-scan base-package="tx.management.tool.extjs" />
 	<!-- 配置数据库操作工具 -->
 	<bean id="TxSessionFactory" class="tx.database.common.utils.TxSessionFactory">
-		 <constructor-arg>
-		 	<map>
-		 		<entry key="DBType" value="mysql"></entry>
-		 		<entry key="jdbcUrl" value="jdbc:mysql://localhost:3306/tx?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true&amp;useSSL=false"></entry>
-		 		<entry key="user" value="tx"></entry>
-		 		<entry key="password" value="tx"></entry>
-		 		<entry key="driverClass" value="com.mysql.jdbc.Driver"></entry>
-		 		<entry key="minPoolSize" value="5"></entry>
-		 		<entry key="maxPoolSize" value="30"></entry>
-		 		<entry key="initialPoolSize" value="10"></entry>
-		 		<entry key="maxIdleTime" value="60"></entry>
-		 		<entry key="minPoolSize" value="5"></entry>
-		 		<entry key="autoCommitOnClose" value="true"></entry>
-		 	</map>
-		 </constructor-arg>
+		<constructor-arg>
+			<map>
+				<entry key="DBType"            value="mysql"></entry>
+				<entry key="jdbcUrl"           value="jdbc:mysql://localhost:3306/tx?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true&amp;useSSL=false"></entry>
+				<entry key="user"              value="tx"></entry>
+				<entry key="password"          value="tx"></entry>
+				<entry key="driverClass"       value="com.mysql.jdbc.Driver"></entry>
+				<entry key="minPoolSize"       value="5"></entry>
+				<entry key="maxPoolSize"       value="30"></entry>
+				<entry key="initialPoolSize"   value="10"></entry>
+				<entry key="maxIdleTime"       value="60"></entry>
+				<entry key="minPoolSize"       value="5"></entry>
+				<entry key="autoCommitOnClose" value="true"></entry>
+			</map>
+		</constructor-arg>
 	</bean>
-	<!--  配置Spring上下文获取的工具类 -->
-	<bean id="SpringContextUtil" class="tx.management.tool.extjs.utils.SpringContextUtil"/>
+	<!-- 配置Spring上下文获取的工具类 -->
+	<bean id="SpringContextUtil" class="tx.management.tool.extjs.utils.SpringContextUtil" />
 </beans>

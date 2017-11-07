@@ -40,6 +40,20 @@ import tx.management.tool.extjs.utils.StringUtils;
 public class BaseSystemBusiness {
 	@Resource(name="TxSessionFactory")
 	private TxSessionFactory txSessionFactory;
+	
+	/**
+	 * 保存修改的菜单节点对象
+	 * @param re
+	 * @return
+	 * @throws SQLException 
+	 */
+	public ResponseEntitys fnSaveMenuNode(RequestEntitys re) throws SQLException {
+		Map<String,Object> parame= JSON.parseObject(re.getDatas(),new TypeReference<Map<String,Object>>(){});
+		int i =txSessionFactory.getTxSession().save("tx_sys_menu", parame);
+		ResponseEntitys rpe = new ResponseEntitys();
+		rpe.setDatas(""+i);
+		return rpe;
+	}
 	/**
 	 * 创建节点菜单
 	 * @param re

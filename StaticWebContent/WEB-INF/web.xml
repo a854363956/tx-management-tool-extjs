@@ -76,5 +76,4 @@
 		<servlet-name>ExtJsAnnotationService</servlet-name>
 		<url-pattern>/component/pags/*</url-pattern>
 	</servlet-mapping>
-	
 </web-app>

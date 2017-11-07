@@ -210,7 +210,7 @@ var addData=  Tx.Window.create({
     			fnSaveData();
     		}
     	},"-","->","-",Ext.form.Label.create({
-        	text:"$${language}->当前登入的方言"
+        	text:"$${language }->当前登入的方言"
         })]
     }],
     items:[{
