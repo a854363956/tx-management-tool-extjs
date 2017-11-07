@@ -1,5 +1,6 @@
 package tx.management.tool.extjs.route.service.business;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
@@ -26,6 +27,7 @@ import tx.management.tool.extjs.exceptions.TxInvokingException;
 import tx.management.tool.extjs.route.service.ExtAjaxOfJsService;
 import tx.management.tool.extjs.route.service.entitys.RequestEntitys;
 import tx.management.tool.extjs.route.service.entitys.ResponseEntitys;
+import tx.management.tool.extjs.utils.POIUtils;
 import tx.management.tool.extjs.utils.RSA;
 import tx.management.tool.extjs.utils.SpringContextUtil;
 import tx.management.tool.extjs.utils.StringUtils;
@@ -40,6 +42,35 @@ import tx.management.tool.extjs.utils.StringUtils;
 public class BaseSystemBusiness {
 	@Resource(name="TxSessionFactory")
 	private TxSessionFactory txSessionFactory;
+	/**
+	 * 根据sqlid 导出Excel数据
+	 * @param re
+	 * @return
+	 * @throws SQLException
+	 * @throws TxInvokingException
+	 * @throws IOException
+	 */
+	public byte[] fnDownloadFile(RequestEntitys re) throws SQLException, TxInvokingException, IOException {
+		String sqlid = JSON.parseObject(re.getDatas()).getString("sqlid");
+		Map<String,Object> parame = new HashMap<String,Object>();
+		parame.put("id", sqlid);
+		QuerySqlResult qsr = txSessionFactory.getTxSession().select("select * from tx_sys_grid where id=${id}", parame);
+		if(qsr.getDatas().size() == 0) {
+			throw TxInvokingException.throwTxInvokingExceptions("TX-000006", sqlid);
+		}else {
+			List<Map<String,Object>> datas =  txSessionFactory.getTxSession().select((String)qsr.getDatas().get(0).get("querysql"),null).getDatas();
+			parame.clear();
+			parame.put("gridid", sqlid);
+			List<Map<String, Object>> cols  =  txSessionFactory.getTxSession().select(getRealSQL("select\r\n" + 
+					"  s.name,\r\n" + 
+					"  e.label\r\n" + 
+					"from\r\n" + 
+					"  tx_sys_grid_columns s\r\n" + 
+					"  left join tx_base_language e on e.name = s.name\r\n" + 
+					"  and e.languagecode = '$${language}' where s.gridid = ${gridid} and  s.isshow = 0  order by s.serialnumber ", re),parame).getDatas();
+			return POIUtils.fnQuerySqlResultToExcelBytes(cols, datas, (String)qsr.getDatas().get(0).get("description"));
+		}
+	}
 	
 	/**
 	 * 保存修改的菜单节点对象

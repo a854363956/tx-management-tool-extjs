@@ -194,6 +194,18 @@
 	}
 	Ext.define("Tx.AjaxRequest",{
 		statics:{
+			fnDownloadFile:function(sqlid){
+				if($("#_download_object_file_cfc4e88780ee4ec68cfb9fdc839211c0").length == 0){
+					var dom = ""+
+						"<form id='_download_object_file_cfc4e88780ee4ec68cfb9fdc839211c0' action='ExtAjaxOfJsService/Request/POST' method='post' target='targetIfr' style='display:none'></form>"+   
+						"<iframe name='targetIfr' style='display:none'></iframe> ";
+					$(document.body).append(dom);
+				}
+				var datas =$fnDesEncryption(Ext.JSON.encode({
+					sqlid:sqlid
+				}))
+				$("#_download_object_file_cfc4e88780ee4ec68cfb9fdc839211c0").attr("action", "ExtAjaxOfJsService/Request/POST?download=true&request_date="+new Date().getTime()+"&cmd=spring%3AbaseSystemBusiness%23fnDownloadFile&datas="+datas);
+			},
 			/**
 			 *  用户登入的接口
 			 *	username    帐号
@@ -651,26 +663,15 @@
 					}
 				});
 				items.push("-");
-				/*items.push({  
+				items.push({  
 					text : "导出数据",
 					iconCls:"fa fa-cloud-download",
-					menu:{
-						items:[{
-							text:"导出Excel",
-							iconCls:"fa fa-file-excel-o",
-							handler:function(){
-								var sqlid = obj.sqlid;
-								//alert(obj.sqlid);
-							}
-						},{
-							text:"导出TXT",
-							iconCls:"fa fa-file-text-o",
-							handler:function(){
-								var sqlid = obj.sqlid;
-							}
-						}]
-				    }
-				});*/
+					handler:function(){
+						var sqlid = obj.sqlid;
+						Tx.AjaxRequest.fnDownloadFile(sqlid);
+					}
+				});
+				items.push("-");
 				items.push("->");
 				var items_ = obj.items || [];
 				for(var i=0;i<items_.length;i++){

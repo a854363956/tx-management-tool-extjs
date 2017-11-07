@@ -169,25 +169,42 @@ var addData=  Tx.Window.create({
 	    				callback:function(result){
 	    					var querySqlResultTableColumns=Ext.JSON.decode(result.datas).querySqlResultTableColumns;
 	    					var addDatas = new Array();
+	    					
+	    					debugger;
+	    					function isExist(columnlabel){
+	    						var data_all = grid_columns.store.data.items;
+	    						for(var i=0;i<data_all.length;i++){
+	    							var data_ = data_all[i].data;
+		    						if(data_.name==columnlabel){
+		    							return true;
+		    						}
+		    					}
+	    						return false;
+	    						
+	    					}
 	    					for(var i=0;i<querySqlResultTableColumns.length;i++){
 	    						var data = querySqlResultTableColumns[i];
-	    						addDatas.push({
-	    							//id:window.GUID().replace(/-/g, ""),
-	    							datatype:data.columnTypeName,
-	    							name:data.columnLabel,
-	    							gridid:Ext.getCmp("_tabledatamaintainpage_form").getForm().getValues().id,
-	    							isready:"0",//只读
-	    							isshow:data.columnLabel == "id"?"1":"0", //0显示
-	    							editor:data.columnTypeName == "datetime"?"1":"3", // 3文本编辑器
-	    							serialnumber:i+1,
-	    							width:data.columnTypeName == "datetime"?"130":""
-	    						});
+	    						if(!isExist(data.columnLabel)){
+	    							addDatas.push({
+	    								//id:window.GUID().replace(/-/g, ""),
+	    								datatype:data.columnTypeName,
+	    								name:data.columnLabel,
+	    								gridid:Ext.getCmp("_tabledatamaintainpage_form").getForm().getValues().id,
+	    								isready:"0",//只读
+	    								isshow:data.columnLabel == "id"?"1":"0", //0显示
+	    										editor:data.columnTypeName == "datetime"?"1":"3", // 3文本编辑器
+	    												serialnumber:i+1,
+	    												width:data.columnTypeName == "datetime"?"130":""
+	    							});
+	    						}
 	    					}
-	    					grid_columns.store.removeAll();
+	    					//grid_columns.store.removeAll();
 	    					var store = grid_columns.store;
-	    					grid_columns.store.add(addDatas);
-	    					grid_columns.store.sync();
-	    					grid_columns.store.load();
+	    					if(addDatas.length !=0){
+	    						grid_columns.store.add(addDatas);
+	    						grid_columns.store.sync();
+	    						grid_columns.store.load();
+	    					}
 	    				}
 	    			});
     			});

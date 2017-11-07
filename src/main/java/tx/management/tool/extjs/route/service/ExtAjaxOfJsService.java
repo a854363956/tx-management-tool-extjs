@@ -43,13 +43,16 @@ public class ExtAjaxOfJsService extends HttpServlet{
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String request_date    = req.getParameter("request_date");
-		String cmd     = req.getParameter("cmd");
-		String datas   = req.getParameter("datas");
+		String cmd      = req.getParameter("cmd");
+		String datas    = req.getParameter("datas");
+		String download = req.getParameter("download");
+		
 		RequestEntitys reqen = new RequestEntitys();
 		reqen.setCmd(cmd);
 		reqen.setRequest_date(request_date);
 		reqen.setDatas(datas);
 		reqen.setSession(req.getSession());
+		
 		OutputStream out = resp.getOutputStream();
 		try {
 			TxSessionFactory txsession = SpringContextUtil.getApplicationContext().getBean(TxSessionFactory.class);
@@ -76,8 +79,16 @@ public class ExtAjaxOfJsService extends HttpServlet{
 				reqen.setDatas(txt);
 				@SuppressWarnings("unchecked")
 				Map<String,Object> r=(Map<String, Object>) reqen.getSession().getAttribute("USERINFO");
-				
-				ResponseEntitys re = (ResponseEntitys) invokingCmd(reqen);
+				if(download!=null && !"".equals(download)) {
+					byte[] result_ =  (byte[]) invokingCmd(reqen,download);
+					resp.reset();
+					resp.addHeader("Content-Disposition", "attachment;filename=datas.xlsx");
+					resp.addHeader("Content-Length", "" + result_.length);
+					resp.setContentType("application/octet-stream");
+					out.write(result_);
+					return;
+				}
+				ResponseEntitys re = (ResponseEntitys) invokingCmd(reqen,download);
 				re.setRequest_date(request_date);
 				re.setResponse_date(""+new Date().getTime());
 				re.setState("SUCCESS");
@@ -91,7 +102,16 @@ public class ExtAjaxOfJsService extends HttpServlet{
 				out.write(JSON.toJSONString(re).getBytes());
 				return;
 			}else {
-				ResponseEntitys re = (ResponseEntitys) invokingCmd(reqen);
+				if(download!=null && !"".equals(download)) {
+					byte[] result_ =  (byte[]) invokingCmd(reqen,download);
+					resp.reset();
+					resp.addHeader("Content-Disposition", "attachment;filename=datas.xlsx");
+					resp.addHeader("Content-Length", "" + result_.length);
+					resp.setContentType("application/octet-stream");
+					out.write(result_);
+					return;
+				}
+				ResponseEntitys re = (ResponseEntitys) invokingCmd(reqen,download);
 				re.setRequest_date(request_date);
 				re.setResponse_date(""+new Date().getTime());
 				re.setState("SUCCESS");
@@ -135,7 +155,7 @@ public class ExtAjaxOfJsService extends HttpServlet{
 		return result;
 	}
 
-	private Object invokingCmd(RequestEntitys req) throws TxInvokingException, ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	private Object invokingCmd(RequestEntitys req,String download) throws TxInvokingException, ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		String cmd = req.getCmd();
 		if(cmd == null || "".equals(cmd)) {
 			throw TxInvokingException.throwTxInvokingExceptions("TX-000000");
