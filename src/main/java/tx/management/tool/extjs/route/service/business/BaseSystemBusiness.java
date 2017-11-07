@@ -70,16 +70,29 @@ public class BaseSystemBusiness {
 	 * @throws SQLException
 	 */
 	public ResponseEntitys fnAuthorizeMmenu(RequestEntitys re) throws SQLException {
-		JSONObject j = JSON.parseObject(re.getDatas());
-		String state = j.getString("state");
-		String id    = j.getString("id");
-		Map<String,Object> sqlparame = new HashMap<String,Object>();
-		sqlparame.put("id", id);
-		sqlparame.put("state", state);
-		int i =txSessionFactory.getTxSession().update("tx_sys_menu_authorization", sqlparame);
-		ResponseEntitys rpe = new ResponseEntitys();
-		rpe.setDatas(""+i);
-		return rpe;
+		Transactional t = null; 
+		try {
+			t=txSessionFactory.getTxSession().openTransactional();
+			JSONObject j  = JSON.parseObject(re.getDatas());
+			String state  = j.getString("state");
+			String id     = j.getString("id");
+			String father = j.getString("father");
+			Map<String,Object> sqlparame = new HashMap<String,Object>();
+			sqlparame.put("id", id);
+			sqlparame.put("state", state);
+			int i =txSessionFactory.getTxSession().update("tx_sys_menu_authorization", sqlparame);
+			sqlparame.put("id", father);
+			///father
+			i+=txSessionFactory.getTxSession().update("tx_sys_menu_authorization", sqlparame);
+			ResponseEntitys rpe = new ResponseEntitys();
+			rpe.setDatas(""+i);
+			t.commit();
+			return rpe;
+		}catch (Exception e) {
+			t.rollback();
+			throw e;
+		}
+		
 	}
 	/**
 	 * 删除角色信息
@@ -258,31 +271,50 @@ public class BaseSystemBusiness {
 	 * @throws SQLException
 	 */
 	public ResponseEntitys fnCreateMenuNode(RequestEntitys re) throws SQLException {
-		ResponseEntitys rpe = new ResponseEntitys();
-		JSONObject j = JSON.parseObject(re.getDatas());
-		String father = j.getString("father");
-		String nodename = j.getString("name");
-		Map<String,Object> sqlparame = new HashMap<String,Object>();
-		sqlparame.put("father", father);
-		List<Map<String,Object>> l =txSessionFactory.getTxSession().select("select max(sorting) as max_  from tx_sys_menu where father =${father}", sqlparame).getDatas();
-		String max = "";
-		if( l.size() ==0) {
-			max="0";
-		}else {
-			Object max_=l .get(0).get("max_");
-			max=""+( max_==null?0:((Integer)max_)+1);
+		Transactional t =null ;
+		try {
+			t=txSessionFactory.getTxSession().openTransactional();
+			ResponseEntitys rpe = new ResponseEntitys();
+			JSONObject j = JSON.parseObject(re.getDatas());
+			String father = j.getString("father");
+			String nodename = j.getString("name");
+			Map<String,Object> sqlparame = new HashMap<String,Object>();
+			sqlparame.put("father", father);
+			List<Map<String,Object>> l =txSessionFactory.getTxSession().select("select max(sorting) as max_  from tx_sys_menu where father =${father}", sqlparame).getDatas();
+			String max = "";
+			if( l.size() ==0) {
+				max="0";
+			}else {
+				Object max_=l .get(0).get("max_");
+				max=""+( max_==null?0:((Integer)max_)+1);
+			}
+			sqlparame.clear();
+			String id =StringUtils.getUUID();
+			sqlparame.put("id", id);
+			sqlparame.put("path", "0");
+			sqlparame.put("icon_class", "default");
+			sqlparame.put("sorting", max);
+			sqlparame.put("leaf", "0");
+			sqlparame.put("father", father);
+			sqlparame.put("label", nodename);
+			int i= txSessionFactory.getTxSession().create("tx_sys_menu", sqlparame);
+			List<Map<String,Object>> result = txSessionFactory.getTxSession().select("select * from tx_base_role", null).getDatas();
+			for(Map<String,Object> m :result) {
+				Map<String,Object> ma = new HashMap<String,Object>();
+				ma.put("id", StringUtils.getUUID());
+				ma.put("roleid", m.get("id"));
+				ma.put("menuid", id);
+				ma.put("state", 1);
+				int num = txSessionFactory.getTxSession().create("tx_sys_menu_authorization", ma);
+				i+=num;
+			}
+			rpe.setDatas(""+i);
+			t.commit();
+			return rpe;
+		} catch (Exception e) {
+			t.rollback();
+			throw e;
 		}
-		sqlparame.clear();
-		sqlparame.put("id", StringUtils.getUUID());
-		sqlparame.put("path", "0");
-		sqlparame.put("icon_class", "default");
-		sqlparame.put("sorting", max);
-		sqlparame.put("leaf", "0");
-		sqlparame.put("father", father);
-		sqlparame.put("label", nodename);
-		int i= txSessionFactory.getTxSession().create("tx_sys_menu", sqlparame);
-		rpe.setDatas(""+i);
-		return rpe;
 	}
 	public ResponseEntitys fnGetMaxMenuSorting(RequestEntitys re) throws SQLException {
 		ResponseEntitys rpe = new ResponseEntitys();
@@ -800,7 +832,7 @@ public class BaseSystemBusiness {
 		QuerySqlResult r  = null;
 		if(!"0".equals(permissions)) {
 			sqlparames.put("roleid", re.getRoleId());
-			r = txSessionFactory.getTxSession().select(getRealSQL("select u.* from tx_sys_menu_authorization n left join tx_sys_menu u on n.menuid = u.id where n.roleid =${roleid} and u.father =${father} order by u.sorting ",re), sqlparames);
+			r = txSessionFactory.getTxSession().select(getRealSQL("select u.* from tx_sys_menu_authorization n left join tx_sys_menu u on n.menuid = u.id where n.roleid =${roleid} and u.father =${father} and n.state = '0' order by u.sorting ",re), sqlparames);
 		}else {
 			r = txSessionFactory.getTxSession().select(getRealSQL("select * from  tx_sys_menu where  father =${father} order by sorting ",re), sqlparames);
 		}
