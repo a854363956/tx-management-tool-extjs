@@ -44,6 +44,26 @@ public class BaseSystemBusiness {
 	private TxSessionFactory txSessionFactory;
 	
 	/**
+	 * 添加方言
+	 * @param re
+	 * @return
+	 * @throws SQLException
+	 * @throws TxInvokingException
+	 */
+	public ResponseEntitys fnAddDialect(RequestEntitys re) throws SQLException, TxInvokingException {
+		Map<String,Object> j = JSON.parseObject(re.getDatas(),new TypeReference<Map<String,Object>>(){});
+		QuerySqlResult qsr = txSessionFactory.getTxSession().select("select * from tx_base_language where languagecode =${languagecode} and name =${name}", j );
+		if(qsr.getDatas().size() !=0) {
+			throw TxInvokingException.throwTxInvokingExceptions("TX-000015",(String)j.get("languagecode"),(String)j.get("name"));
+		}
+		j.put("id", StringUtils.getUUID());
+		int i =txSessionFactory.getTxSession().create("tx_base_language", j );
+		ResponseEntitys rpe = new ResponseEntitys();
+		rpe.setDatas(""+i);
+		return rpe;
+	}
+	
+	/**
 	 * 对菜单进行授权操作
 	 * @param re
 	 * @return

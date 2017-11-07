@@ -95,10 +95,20 @@
 						click:function(){
 							if(Ext.getCmp("__add_user_maintain_page_form").isValid()){
 								var datas = Ext.getCmp("__add_user_maintain_page_form").getForm().getValues()
-								var store = grid.store;
-								grid.store.add(datas);
-								grid.store.sync();
-								addData.hide();
+								
+								Tx.AjaxRequest.post({
+									cmd:"spring:baseSystemBusiness#fnAddDialect",
+									datas:datas,
+									dom:grid,
+									callback:function(result){
+										Tx.MessageBox.info("添加数据成功!");
+										var store = grid.store;
+										grid.store.load();
+										addData.hide();
+									}
+								});
+								
+								
 							}
 						}
 					}
