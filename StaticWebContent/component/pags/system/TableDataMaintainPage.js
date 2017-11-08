@@ -26,14 +26,15 @@
 		}
 	}
   var grid_columns= Tx.auto.TxGrid.getTxGrid({
-/*	items:[{
-			text : "字段",
-			iconCls : "fa fa-floppy-o",
+	items:[{
+			text : "清空字段",
+			iconCls : "fa fa-trash-o",
 			handler:function(){
 				var selection = grid_columns.getView().getSelectionModel().getSelection()[0];
-				grid_columns.store.remove(selection);
+				grid_columns.store.removeAll();
+				grid_columns.store.load();
 		    }
-		}],*/
+		}],
 	queryname:"name",
 	columns:[{
 		text:"序号",

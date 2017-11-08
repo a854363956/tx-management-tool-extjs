@@ -27,12 +27,13 @@
 	<script type="text/javascript">
 		Ext.Loader.setPath("Ext.ux.DateTimePicker","component/libs/DateTimePicker.js");
 		Ext.Loader.setPath("Ext.ux.DateTimeField","component/libs/DateTimeField.js");
+		Ext.Loader.setPath("Ext.ux.TabCloseMenu","component/libs/TabCloseMenu.js");
 	</script>
 </head>
 <body>
 	<script type="text/javascript">
 	Ext.application({
-		requires : [ 'Ext.ux.DateTimeField' ],
+		requires : [ 'Ext.ux.DateTimeField','Ext.ux.TabCloseMenu' ],
 		launch : function() {
 			Ext.onReady(function () {
 				///阻止浏览器默认右键菜单 userid
@@ -99,13 +100,13 @@
 			        	text:"当前系统版本:0.0.1"
 			        })]
 			    });
-				window._center = new Ext.TabPanel({
+				window._center = Ext.TabPanel.create({
 			        region : 'center',
 			        id:"_center",
 			        //activeTab : 0,
 			        items : [],
+			        plugins: Ext.ux.TabCloseMenu.create(),
 			        listeners:{
-			        	
 			        }
 			    });
 				window.view = Ext.Viewport.create({
