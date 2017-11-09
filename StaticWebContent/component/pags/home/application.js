@@ -1,3 +1,4 @@
+var VERSION = "0.0.2";
 Ext.application({
 		requires : [ 'Ext.ux.DateTimeField','Ext.ux.TabCloseMenu' ],
 		launch : function() {
@@ -63,7 +64,7 @@ Ext.application({
 			        	id:"__rolename",
 			        	text:"所属角色: ...... "
 			        }),'-','->',Ext.form.Label.create({
-			        	text:"当前系统版本:0.0.1"
+			        	text:"当前系统版本:"+VERSION
 			        })]
 			    });
 				window._center = Ext.TabPanel.create({
