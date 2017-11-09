@@ -1,4 +1,4 @@
-var VERSION = "0.0.2";
+var VERSION = "000.000.002";
 Ext.application({
 		requires : [ 'Ext.ux.DateTimeField','Ext.ux.TabCloseMenu' ],
 		launch : function() {
@@ -94,11 +94,11 @@ Ext.application({
 							},
 							dom:tree,
 							callback:function(result){
-								if(!Ext.isChrome62){
+								/*if(!Ext.isChrome62){
 									Tx.MessageBox.question("系统检测您使用的浏览器不是Google Chrome版本62以上,为了提高系统的流畅性,以及稳定性和安全性,强烈建议使用(PS:Google Chrome版本62以上浏览器将完全保证系统的流畅,稳定和安全),是否确认下载?",function(){
 										window.open(window.location.href+"/install/ChromeSetup.exe"); 
 									});
-								}
+								}*/
 								//获取语言的映射关系
 								Tx.AjaxRequest.post({
 									cmd:"spring:baseSystemBusiness#fnGetLanguageAll",
