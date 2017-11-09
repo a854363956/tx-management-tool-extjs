@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -44,6 +45,17 @@ public class JasperreportsUtils {
 	    JasperReport report = JasperCompileManager.compileReport(design);
 	    return JasperFillManager.fillReport(report, paramsMap);
 	}
+	
+	public static JasperPrint getJasperPrint(InputStream in,String json) throws JRException {
+		JasperDesign design =JRXmlLoader.load(in);
+		Map<String, Object> paramsMap = new HashMap<String, Object>();
+		InputStream is = new ByteArrayInputStream(json.getBytes());
+	    paramsMap.put("JSON_INPUT_STREAM", is);
+	    paramsMap.put(JsonQueryExecuterFactory.JSON_LOCALE, Locale.CHINA);
+	    paramsMap.put(JRParameter.REPORT_LOCALE, Locale.CHINA);
+	    JasperReport report = JasperCompileManager.compileReport(design);
+	    return JasperFillManager.fillReport(report, paramsMap);
+	}
 	/**
 	 * 导出pdf字节
 	 * @param jrxml 源文件
@@ -68,6 +80,19 @@ public class JasperreportsUtils {
 		 Exporter exporter= new HtmlExporter();
 		 exporter.setExporterOutput(new SimpleHtmlExporterOutput(out));
 		 exporter.setExporterInput(new SimpleExporterInput(getJasperPrint(jrxml,json)));
+		 exporter.exportReport();
+		 return out.toByteArray();
+	}
+	 
+	public static byte[] getPdfBytesJasperreports(InputStream in ,String json) throws JRException {
+		return JasperExportManager.exportReportToPdf(getJasperPrint(in,json));
+	}
+	
+	public static byte[] getHtmlBytesJasperreports(InputStream in ,String json) throws JRException, IOException {
+		 ByteArrayOutputStream out = new ByteArrayOutputStream();
+		 Exporter exporter= new HtmlExporter();
+		 exporter.setExporterOutput(new SimpleHtmlExporterOutput(out));
+		 exporter.setExporterInput(new SimpleExporterInput(getJasperPrint(in,json)));
 		 exporter.exportReport();
 		 return out.toByteArray();
 	}

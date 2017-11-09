@@ -170,8 +170,6 @@ var addData=  Tx.Window.create({
 	    				callback:function(result){
 	    					var querySqlResultTableColumns=Ext.JSON.decode(result.datas).querySqlResultTableColumns;
 	    					var addDatas = new Array();
-	    					
-	    					debugger;
 	    					function isExist(columnlabel){
 	    						var data_all = grid_columns.store.data.items;
 	    						for(var i=0;i<data_all.length;i++){

@@ -1,10 +1,12 @@
 package tx.management.tool.extjs.route.service.business;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +19,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 
+import net.sf.jasperreports.engine.JRException;
 import tx.database.common.utils.Transactional;
 import tx.database.common.utils.TxSessionFactory;
 import tx.database.common.utils.entitys.QuerySqlResult;
@@ -27,6 +30,7 @@ import tx.management.tool.extjs.exceptions.TxInvokingException;
 import tx.management.tool.extjs.route.service.ExtAjaxOfJsService;
 import tx.management.tool.extjs.route.service.entitys.RequestEntitys;
 import tx.management.tool.extjs.route.service.entitys.ResponseEntitys;
+import tx.management.tool.extjs.utils.JasperreportsUtils;
 import tx.management.tool.extjs.utils.POIUtils;
 import tx.management.tool.extjs.utils.RSA;
 import tx.management.tool.extjs.utils.SpringContextUtil;
@@ -43,6 +47,88 @@ public class BaseSystemBusiness {
 	@Resource(name="TxSessionFactory")
 	private TxSessionFactory txSessionFactory;
 	
+	/**
+	 * 保存录入的打印参数
+	 * @param re
+	 * @return
+	 * @throws SQLException
+	 */
+	public ResponseEntitys fnSavePrintPage(RequestEntitys re) throws SQLException {
+		Map<String,Object>  j = JSON.parseObject(re.getDatas(),new TypeReference<Map<String,Object>>(){});
+		ResponseEntitys rpe = new ResponseEntitys();
+		int i = txSessionFactory.getTxSession().save("tx_sys_print", j);
+		rpe.setDatas(""+i);
+		return rpe;
+	}
+	public byte[] fnCreateDirectPrintPage(RequestEntitys re) throws SQLException, TxInvokingException, JRException, IOException {
+		JSONObject j   = JSON.parseObject(re.getDatas());
+		String printid = j.getString("printid");
+		String datas   = j.getString("datas");
+		Map<String,Object> sqlparame  = new HashMap<String,Object>();
+		sqlparame.put("id", printid);
+		QuerySqlResult qsr = txSessionFactory.getTxSession().select("select * from tx_sys_print where id=${id}", sqlparame);
+		List<Map<String,Object>> datas_ = qsr.getDatas();
+		if(datas_.size() == 0) {
+			throw TxInvokingException.throwTxInvokingExceptions("TX-000016", printid);
+		}else {
+			String  content =(String) datas_.get(0).get("content");
+			ByteArrayInputStream in = new ByteArrayInputStream(content.getBytes());
+			byte[] bytes = JasperreportsUtils.getHtmlBytesJasperreports(in, datas);
+			String html = new String(bytes);
+			html = html.replace("<head>", "<head><style type=\"text/css\" media=\"print\">\r\n" + 
+					" @page \r\n" + 
+					" {\r\n" + 
+					" size: auto;/* auto is the initial value */\r\n" + 
+					" margin: 0mm;/* this affects the margin in the printer settings */\r\n" + 
+					" }\r\n" + 
+					"</style>\r\n" + 
+					"<script type=\"text/javascript\">\r\n" + 
+					"	(function(){\r\n" + 
+					"               window.print();\r\n" + 
+					"	})();\r\n" + 
+					"</script>");
+			return html.getBytes();
+		}
+	}
+	
+	/**
+	 * 预览打印当前页面 
+	 * @param re            创建打印的页面
+	 * @throws SQLException
+	 * @throws TxInvokingException
+	 * @throws JRException
+	 * @throws IOException
+	 */
+	public byte[] fnCreatePrintPage(RequestEntitys re) throws SQLException, TxInvokingException, JRException, IOException {
+		JSONObject j   = JSON.parseObject(re.getDatas());
+		String printid = j.getString("printid");
+		String datas   = j.getString("datas");
+		Map<String,Object> sqlparame  = new HashMap<String,Object>();
+		sqlparame.put("id", printid);
+		QuerySqlResult qsr = txSessionFactory.getTxSession().select("select * from tx_sys_print where id=${id}", sqlparame);
+		List<Map<String,Object>> datas_ = qsr.getDatas();
+		if(datas_.size() == 0) {
+			throw TxInvokingException.throwTxInvokingExceptions("TX-000016", printid);
+		}else {
+			String  content =(String) datas_.get(0).get("content");
+			ByteArrayInputStream in = new ByteArrayInputStream(content.getBytes());
+			byte[] bytes = JasperreportsUtils.getHtmlBytesJasperreports(in, datas);
+			String html = new String(bytes);
+			html = html.replace("<head>", "<head><style type=\"text/css\" media=\"print\">\r\n" + 
+					" @page \r\n" + 
+					" {\r\n" + 
+					" size: auto;/* auto is the initial value */\r\n" + 
+					" margin: 0mm;/* this affects the margin in the printer settings */\r\n" + 
+					" }\r\n" + 
+					"</style>\r\n" + 
+					"<script type=\"text/javascript\">\r\n" + 
+					"	(function(){\r\n" + 
+					"               window.parent._print_loadMarsk.hide()\r\n" + 
+					"	})();\r\n" + 
+					"</script>");
+			return html.getBytes();
+		}
+	}
 	/**
 	 * 添加方言
 	 * @param re

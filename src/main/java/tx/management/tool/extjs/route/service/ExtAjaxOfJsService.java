@@ -45,7 +45,7 @@ public class ExtAjaxOfJsService extends HttpServlet{
 		String request_date    = req.getParameter("request_date");
 		String cmd      = req.getParameter("cmd");
 		String datas    = req.getParameter("datas");
-		String download = req.getParameter("download");
+		String type = req.getParameter("type");
 		
 		RequestEntitys reqen = new RequestEntitys();
 		reqen.setCmd(cmd);
@@ -79,16 +79,22 @@ public class ExtAjaxOfJsService extends HttpServlet{
 				reqen.setDatas(txt);
 				@SuppressWarnings("unchecked")
 				Map<String,Object> r=(Map<String, Object>) reqen.getSession().getAttribute("USERINFO");
-				if(download!=null && !"".equals(download)) {
-					byte[] result_ =  (byte[]) invokingCmd(reqen,download);
-					resp.reset();
-					resp.addHeader("Content-Disposition", "attachment;filename=datas.xlsx");
-					resp.addHeader("Content-Length", "" + result_.length);
-					resp.setContentType("application/octet-stream");
-					out.write(result_);
-					return;
+				if(type!=null && !"".equals(type)) {
+					if("1".equals(type)) {
+						byte[] result_ =  (byte[]) invokingCmd(reqen,type);
+						resp.reset();
+						resp.addHeader("Content-Disposition", "attachment;filename=datas.xlsx");
+						resp.addHeader("Content-Length", "" + result_.length);
+						resp.setContentType("application/octet-stream");
+						out.write(result_);
+						return;
+					}else if("2".equals(type)){
+						byte[] result_ =  (byte[]) invokingCmd(reqen,type);
+						out.write(result_);
+						return;
+					}
 				}
-				ResponseEntitys re = (ResponseEntitys) invokingCmd(reqen,download);
+				ResponseEntitys re = (ResponseEntitys) invokingCmd(reqen,type);
 				re.setRequest_date(request_date);
 				re.setResponse_date(""+new Date().getTime());
 				re.setState("SUCCESS");
@@ -102,16 +108,22 @@ public class ExtAjaxOfJsService extends HttpServlet{
 				out.write(JSON.toJSONString(re).getBytes());
 				return;
 			}else {
-				if(download!=null && !"".equals(download)) {
-					byte[] result_ =  (byte[]) invokingCmd(reqen,download);
-					resp.reset();
-					resp.addHeader("Content-Disposition", "attachment;filename=datas.xlsx");
-					resp.addHeader("Content-Length", "" + result_.length);
-					resp.setContentType("application/octet-stream");
-					out.write(result_);
-					return;
+				if(type!=null && !"".equals(type)) {
+					if("1".equals(type)) {
+						byte[] result_ =  (byte[]) invokingCmd(reqen,type);
+						resp.reset();
+						resp.addHeader("Content-Disposition", "attachment;filename=datas.xlsx");
+						resp.addHeader("Content-Length", "" + result_.length);
+						resp.setContentType("application/octet-stream");
+						out.write(result_);
+						return;
+					}else if("2".equals(type)) {
+						byte[] result_ =  (byte[]) invokingCmd(reqen,type);
+						out.write(result_);
+						return;
+					}
 				}
-				ResponseEntitys re = (ResponseEntitys) invokingCmd(reqen,download);
+				ResponseEntitys re = (ResponseEntitys) invokingCmd(reqen,type);
 				re.setRequest_date(request_date);
 				re.setResponse_date(""+new Date().getTime());
 				re.setState("SUCCESS");

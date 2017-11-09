@@ -192,14 +192,87 @@
 		} catch (e) {
 		}
 	}
+	var _____addData =Tx.Window.create({
+		title : "打印方案在线预览",
+	    closable : false,
+	    width : "55%",
+	    height : "80%",
+	    resizable : false, // 窗口可拖动改变大小;
+	    modal : true, // 设置弹窗之后屏蔽掉页面上所有的其他组件;
+	    plain : true, // 使窗体主体更融于框架颜色;
+	    html:"<iframe id='__print_views' style='width: 100%;height: 100%'  frameborder=0 name='fnPrintPreview' style='display:none'></iframe>",
+	    buttons:[{
+			xtype : "button",
+			text : "打印",
+			listeners:{
+				click:function(){
+					$("#__print_views")[0].contentWindow.print(); 
+				}
+			}
+	    },"-",{
+	    	xtype:"button",
+	    	text:"返回",
+	    	listeners:{
+	    		click:function(){
+	    			_____addData.hide();
+	    		}
+	    	}
+	   }],
+	   listeners:{
+		   show :function(){
+			    window._print_loadMarsk = new Ext.LoadMask(_____addData,{
+				   msg : '正在获取打印方案,请稍后......',
+				   removeMask : true// 完成后移除
+				});
+				window._print_loadMarsk.show();
+		   }
+	   }
+	});
+	Ext.define("Tx.Print",{
+		statics:{
+			/**
+			 * 直接打印文件
+			 * @parame  printid 打印模版的ID
+			 * @parames parames 打印的参数
+			 */
+			fnPrintDirectly:function(obj){
+				var datas =$fnDesEncryption(Ext.JSON.encode({
+					printid:obj.printid,
+					datas:obj.datas
+				}))
+				if($("#_print_page_7337ed01_0618_4966_b592_9a54bd93aad1").length == 0){
+					var dom =  "<form id='_print_page_7337ed01_0618_4966_b592_9a54bd93aad1' action='ExtAjaxOfJsService/Request/POST' method='post' target='fnPrintPreview_' style='display:none'></form>"+
+							   "<iframe name='fnPrintPreview_' style='display:none'></iframe>";
+					$(document.body).append(dom);
+				}
+				$("#_print_page_7337ed01_0618_4966_b592_9a54bd93aad1").attr("action", "ExtAjaxOfJsService/Request/POST?type=2&request_date="+new Date().getTime()+"&cmd=spring%3AbaseSystemBusiness%23fnCreateDirectPrintPage&datas="+datas);
+				$("#_print_page_7337ed01_0618_4966_b592_9a54bd93aad1").submit();
+			},
+			/**
+			 * 预览打印文件
+			 * @parame  printid 打印模版的ID
+			 * @parame  parames 打印的参数
+			 * @parame  dom     要遮挡的dom
+			 */
+			fnPrintPreview:function(obj){
+				_____addData.show();
+				var datas =$fnDesEncryption(Ext.JSON.encode({
+					printid:obj.printid,
+					datas:obj.datas
+				}))
+				if($("#_print_page_commit_7337ed01_0618_4966_b592_9a54bd93aad1_fnPrintPreview").length == 0){
+					var dom =  "<form id='_print_page_commit_7337ed01_0618_4966_b592_9a54bd93aad1_fnPrintPreview' action='ExtAjaxOfJsService/Request/POST' method='post' target='fnPrintPreview' style='display:none'></form>";
+					$(document.body).append(dom);
+				}
+				$("#_print_page_commit_7337ed01_0618_4966_b592_9a54bd93aad1_fnPrintPreview").attr("action", "ExtAjaxOfJsService/Request/POST?type=2&request_date="+new Date().getTime()+"&cmd=spring%3AbaseSystemBusiness%23fnCreatePrintPage&datas="+datas);
+				$("#_print_page_commit_7337ed01_0618_4966_b592_9a54bd93aad1_fnPrintPreview").submit();
+			}
+		}
+	});
 	Ext.define("Tx.AjaxRequest",{
 		statics:{
 			fnDownloadFile:function(sqlid){
-				var loadMarsk = new Ext.LoadMask(window._center,{
-				   msg : '正在下载文件,请稍后......',
-				   removeMask : true// 完成后移除
-				});
-				loadMarsk.show();
+				
 				if($("#_download_object_file_cfc4e88780ee4ec68cfb9fdc839211c0").length == 0){
 					var dom = ""+
 						"<form id='_download_object_file_cfc4e88780ee4ec68cfb9fdc839211c0' action='ExtAjaxOfJsService/Request/POST' method='post' target='targetIfr' style='display:none'></form>"+   
@@ -209,9 +282,8 @@
 				var datas =$fnDesEncryption(Ext.JSON.encode({
 					sqlid:sqlid
 				}))
-				$("#_download_object_file_cfc4e88780ee4ec68cfb9fdc839211c0").attr("action", "ExtAjaxOfJsService/Request/POST?download=true&request_date="+new Date().getTime()+"&cmd=spring%3AbaseSystemBusiness%23fnDownloadFile&datas="+datas);
+				$("#_download_object_file_cfc4e88780ee4ec68cfb9fdc839211c0").attr("action", "ExtAjaxOfJsService/Request/POST?type=1&request_date="+new Date().getTime()+"&cmd=spring%3AbaseSystemBusiness%23fnDownloadFile&datas="+datas);
 				$("#_download_object_file_cfc4e88780ee4ec68cfb9fdc839211c0").submit();
-				loadMarsk.hide();
 			},
 			/**
 			 *  用户登入的接口
@@ -353,7 +425,62 @@
 			}
 		}
 	});
-	
+	Ext.define("Tx.field.XmlTextArea",{
+		xtype: 'xmltextarea',
+		extend:"Ext.form.TextArea",
+		setValue:function(txt){
+			var editor = this.editor || null;
+			if(editor == null){
+				this._initValue=txt;
+			}else{
+				this.editor.setValue(txt);
+			}
+		},
+		getSubmitData:function(){
+			var result = {};
+			result[this.name] = this.getValue();
+			return result;
+		},
+		getValue:function(){
+			var editor = this.editor || null;
+			if(editor == null){
+				return this._initValue;
+			}else{
+				return editor.getValue();
+			}
+		},
+		listeners:{
+			afterrender :function( self, eOpts){
+				Ext.require("component.libs.codemirror.mode.xml.xml");
+				setTimeout(function(){
+					var width = $("#"+self.id+"-inputEl").width();
+					var height = $("#"+self.id+"-inputEl").height();
+					self.editor = CodeMirror.fromTextArea(Ext.getDom(self.id+"-inputEl"), {
+					    mode: "text/html",
+					    indentWithTabs: true,
+					    smartIndent: true,
+					    styleActiveLine: true,
+					    lineNumbers: true,
+					    matchBrackets : true,
+					    autofocus: true,
+/*					    extraKeys: {"Ctrl-Space": "autocomplete"},
+					    hintOptions: {tables: {
+					      users: ["name", "score", "birthDate"],
+					      countries: ["name", "population", "size"]
+					    }}*/
+				   });
+				   self.editor.setSize(width,height);
+				   self.editor.setValue(self._initValue);
+				   self.editor.setOption("styleActiveLine", {nonEmpty: true});
+				   /*self.editor.on("change",function(self_,arg){
+					   	self.setValue(self_.getValue());
+					});
+				   self.editor.setValue(self.getValue());*/
+				},100);
+				
+			}
+		},
+	});
 	Ext.define("Tx.field.JSTextArea",{
 		xtype: 'jstextarea',
 		extend:"Ext.form.TextArea",
@@ -388,6 +515,7 @@
 					    mode: "application/json",
 					    indentWithTabs: true,
 					    smartIndent: true,
+					    styleActiveLine: true,
 					    lineNumbers: true,
 					    matchBrackets : true,
 					    autofocus: true,
@@ -399,6 +527,7 @@
 				   });
 				   self.editor.setSize(width,height);
 				   self.editor.setValue(self._initValue);
+				   self.editor.setOption("styleActiveLine", {nonEmpty: true});
 				   /*self.editor.on("change",function(self_,arg){
 					   	self.setValue(self_.getValue());
 					});
@@ -450,6 +579,7 @@
 					    smartIndent: true,
 					    lineNumbers: true,
 					    matchBrackets : true,
+					    styleActiveLine: true,
 /*					    autofocus: true,
 					    extraKeys: {"Ctrl-Space": "autocomplete"},
 					    hintOptions: {tables: {
@@ -459,6 +589,7 @@
 				   });
 				   self.editor.setSize(width,height);
 				   self.editor.setValue(self._initValue);
+				   self.editor.setOption("styleActiveLine", {nonEmpty: true});
 				   /*self.editor.on("change",function(self_,arg){
 					   	self.setValue(self_.getValue());
 					});
@@ -753,6 +884,12 @@
 					config.height=obj.height;
 				}
 				var grid = Ext.create('Ext.grid.Panel', config);
+				grid.store.load({
+					scope:this,
+					callback:function(records, operation, success){
+						grid.getSelectionModel().select(0, true); 
+					}
+				});
 				return grid;
 			},
 			/**
@@ -785,7 +922,7 @@
 					    property : 'id',
 					    direction : 'ASC'
 					} ],*/
-					autoLoad : true,
+					//autoLoad : true,
 					listeners:{
 						add:function( store, records, index, eOpts){
 							for(var i=0;i<records.length;i++){
