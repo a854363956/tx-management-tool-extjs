@@ -4,10 +4,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -46,8 +48,64 @@ import tx.management.tool.extjs.utils.StringUtils;
 public class BaseSystemBusiness {
 	@Resource(name="TxSessionFactory")
 	private TxSessionFactory txSessionFactory;
+	/**
+	 * 获取操作系统的一些信息  暂时不使用,考虑到群集此方法设计有问题
+	 * @param re
+	 * @return
+	 */
+	@Deprecated
+	public ResponseEntitys fnGetSysTemInfo(RequestEntitys re) {
+		//java当前虚拟机最大内存
+		long jvmMaxMemory   = Runtime.getRuntime().maxMemory();
+		//java当前虚拟机已分配内存
+		long jvmTotalMemory = Runtime.getRuntime().totalMemory();
+		//可分配内存
+		long jvmRreeMemory  = Runtime.getRuntime().freeMemory();
+		Map<String,Object> result = new HashMap<String,Object>();
+		result.put("jvmMaxMemory", jvmMaxMemory);
+		result.put("jvmTotalMemory", jvmTotalMemory);
+		result.put("jvmRreeMemory", jvmRreeMemory);
+		
+		List<Map<String,Object>> threads = new ArrayList<Map<String,Object>>();
+		Map<Thread, StackTraceElement[]> map=Thread.getAllStackTraces(); 
+		Iterator<Thread> it=map.keySet().iterator();
+		while (it.hasNext()) {
+			Thread t=(Thread) it.next(); 
+			Map<String,Object> parames = new HashMap<String,Object>();
+			parames.put("name", t.getName());
+			parames.put("state", t.getState());
+			threads.add(parames);
+		}
+		result.put("threads", threads);
+		ResponseEntitys rpe = new ResponseEntitys();
+		rpe.setDatas(JSON.toJSONString(result));
+		return rpe;
+	}
 	
-	
+	@SuppressWarnings("unchecked")
+	public ResponseEntitys fnUpdatePassword(RequestEntitys re) throws TxInvokingException, SQLException, NoSuchAlgorithmException {
+		JSONObject datas = JSON.parseObject(re.getDatas());
+		String password       = datas.getString("password");
+		String newPassword    = datas.getString("newPassword") == null ?    "" : datas.getString("newPassword");
+		String twoNewPassword = datas.getString("twoNewPassword") == null ? "" : datas.getString("newPassword");
+		if(newPassword.equals(twoNewPassword)) {
+				
+			Map<String,Object> userinfo =(Map<String, Object>) re.getSession().getAttribute("USERINFO");
+			if(!(StringUtils.md5(password).equals((String)userinfo.get("password")))) {
+				throw TxInvokingException.throwTxInvokingExceptions("TX-000018");
+			}
+			String id = (String) userinfo.get("id");
+			Map<String,Object> updateUser = new HashMap<String,Object>();
+			updateUser.put("id", id);
+			updateUser.put("password", StringUtils.md5(newPassword));
+			int i = txSessionFactory.getTxSession().update("tx_base_user", updateUser);
+			ResponseEntitys rpe = new ResponseEntitys();
+			rpe.setDatas(""+i);
+			return rpe;
+		}else {
+			throw TxInvokingException.throwTxInvokingExceptions("TX-000017");
+		}
+	}
 	/**
 	 * 保存录入的打印参数
 	 * @param re

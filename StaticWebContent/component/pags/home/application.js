@@ -7,6 +7,80 @@ Ext.application({
 				document.oncontextmenu = function () { return false }
 				var tabscript ={};
 				var isInitTreeMenu=false;
+				var updatePassword = Tx.Window.create({
+				    title : "请输入原始密码进行修改密码!",
+				    closable : false,
+				    width : 350,
+				    height : 175,
+				    resizable : false, // 窗口可拖动改变大小;
+				    modal : true, // 设置弹窗之后屏蔽掉页面上所有的其他组件;
+				    plain : true, // 使窗体主体更融于框架颜色;
+				    listeners : {
+						show : function() {
+						    Ext.getCmp('username').focus(true);
+						}
+				    },
+				    buttons : [ {
+						xtype : "button",
+						text : "修改",
+						listeners:{
+							click:function(){
+								if(Ext.getCmp("updatePasswordFrom").isValid()){
+									var da_ = Ext.getCmp("updatePasswordFrom").getForm().getValues();
+									Tx.AjaxRequest.post({
+										cmd:"spring:baseSystemBusiness#fnUpdatePassword",
+										datas:da_,
+										dom:null,
+										callback:function(result){
+											updatePassword.hide();
+											Tx.MessageBox.info("修改密码成功!");
+										}
+									});
+								}
+							}
+						}
+				    } ,{
+						xtype : "button",
+						text : "返回",
+						listeners:{
+							click:function(){
+								updatePassword.hide();
+							}
+						}
+				    }],
+					    items : [ {
+						xtype : "form",
+						id : "updatePasswordFrom",
+						defaultType : 'textfield',
+						items : [ {
+							    xtype : 'fieldset',
+							    title : '修改密码',
+							    collapsible : false,
+							    autoHeight : true,
+							    autoWidth : true,
+							    defaults : {
+									allowBlank : false,
+									xtype : 'textfield'
+							    },
+							    items : [ {
+									fieldLabel : '当前密码',
+									inputType : 'password',
+									name : "password",
+									maxLength: 15,
+							    }, {
+									fieldLabel : '新的密码',
+									inputType : 'password',
+									maxLength: 15,
+									name : "newPassword",
+							    }, {
+									fieldLabel : '再次输入密码',
+									inputType : 'password',
+									maxLength: 15,
+									name : "twoNewPassword",
+							    }]
+							} ]
+					    } ]
+				});
 				var top = Ext.toolbar.Toolbar.create({
 					region : "north",
 					items : [ "->"/*, Ext.button.Button.create({
@@ -15,10 +89,14 @@ Ext.application({
 					}), "-", Ext.button.Button.create({
 					    iconCls : "fa fa-language",
 					    text : "选择业务方言"
-					}), "-", Ext.button.Button.create({
+					}), "-"*/, Ext.button.Button.create({
 					    iconCls : "fa fa-user-circle fa-lg",
-					    text : "我的资料维护"
-					})*/, "-", Ext.button.Button.create({
+					    text : "修改密码",
+					    handler:function(){
+					    	Ext.getCmp('updatePasswordFrom').form.reset()
+					    	updatePassword.show();
+					    }
+					}), "-", Ext.button.Button.create({
 					    iconCls : "fa fa-sign-out fa-lg",
 					    text : "退出系统",
 					    handler:function(){
