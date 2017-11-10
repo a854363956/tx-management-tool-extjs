@@ -1,1 +1,1 @@
-# tx-management-tool-extjs
+# tx-management-tool-extjs GPL协议
