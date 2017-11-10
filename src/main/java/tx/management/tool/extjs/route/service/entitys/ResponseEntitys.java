@@ -9,6 +9,14 @@ public class ResponseEntitys {
 	//当前执行方法完成后返回的时间
 	private String response_date;
 	private String state;
+	private String threadid;
+	
+	public String getThreadid() {
+		return threadid;
+	}
+	public void setThreadid(String threadid) {
+		this.threadid = threadid;
+	}
 	private boolean isSafety;
 	
 	public boolean isSafety() {

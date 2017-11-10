@@ -17,10 +17,10 @@
 		<constructor-arg>
 			<map>
 				<entry key="DBType"            value="mysql"></entry>
-				<entry key="jdbcUrl"           value="jdbc:mysql://localhost:3306/tx?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true&amp;useSSL=false"></entry>
+				<entry key="jdbcUrl"           value="jdbc:log4jdbc:mysql://localhost:3306/tx?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true&amp;useSSL=false"></entry>
 				<entry key="user"              value="tx"></entry>
 				<entry key="password"          value="tx"></entry>
-				<entry key="driverClass"       value="com.mysql.jdbc.Driver"></entry>
+				<entry key="driverClass"       value="net.sf.log4jdbc.DriverSpy"></entry>
 				<entry key="minPoolSize"       value="5"></entry>
 				<entry key="maxPoolSize"       value="30"></entry>
 				<entry key="initialPoolSize"   value="10"></entry>

@@ -47,6 +47,7 @@ public class BaseSystemBusiness {
 	@Resource(name="TxSessionFactory")
 	private TxSessionFactory txSessionFactory;
 	
+	
 	/**
 	 * 保存录入的打印参数
 	 * @param re

@@ -28,6 +28,7 @@ import tx.management.tool.extjs.enumeration.CmdService;
 import tx.management.tool.extjs.exceptions.TxInvokingException;
 import tx.management.tool.extjs.route.service.entitys.RequestEntitys;
 import tx.management.tool.extjs.route.service.entitys.ResponseEntitys;
+import tx.management.tool.extjs.route.service.entitys.SqlLogsDatas;
 import tx.management.tool.extjs.utils.Base64;
 import tx.management.tool.extjs.utils.DES;
 import tx.management.tool.extjs.utils.SpringContextUtil;
@@ -35,13 +36,21 @@ import tx.management.tool.extjs.utils.StringUtils;
 
 public class ExtAjaxOfJsService extends HttpServlet{
 	private static final long serialVersionUID = 7058324705163717385L;
+	public static final ThreadLocal<SqlLogsDatas> sqlthreadlocat = new ThreadLocal<SqlLogsDatas>();
 	private static  Properties languageProperties =new Properties(); ;
 	public static String getLanguageHint(String HintCode) {
 		return languageProperties.getProperty(HintCode);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		Thread t = Thread.currentThread();
+		
+		//-----------------------------------------------
+		log4jJdbcThread(req, t);
+		//---------------------------------------------------
+		
 		String request_date    = req.getParameter("request_date");
 		String cmd      = req.getParameter("cmd");
 		String datas    = req.getParameter("datas");
@@ -66,6 +75,7 @@ public class ExtAjaxOfJsService extends HttpServlet{
 				re.setResponse_date(""+new Date().getTime());
 				re.setRequest_date(request_date);
 				re.setState("RELOGIN");
+				re.setThreadid(t.getName());
 				out.write(JSON.toJSONString(re).getBytes());
 				return;
 			}
@@ -98,7 +108,7 @@ public class ExtAjaxOfJsService extends HttpServlet{
 				re.setRequest_date(request_date);
 				re.setResponse_date(""+new Date().getTime());
 				re.setState("SUCCESS");
-
+				re.setThreadid(t.getName());
 				if((Integer)r.get("safety") == 1) {
 					re.setDatas(Base64.encode(des.Encrypt(re.getDatas() == null ? "" : re.getDatas(), key_0, key_1, key_2).getBytes()));
 					re.setSafety(true);
@@ -127,6 +137,7 @@ public class ExtAjaxOfJsService extends HttpServlet{
 				re.setRequest_date(request_date);
 				re.setResponse_date(""+new Date().getTime());
 				re.setState("SUCCESS");
+				re.setThreadid(t.getName());
 				out.write(JSON.toJSONString(re).getBytes());
 				return;
 			}
@@ -140,6 +151,7 @@ public class ExtAjaxOfJsService extends HttpServlet{
 			re.setRequest_date(request_date);
 			re.setDatas(StringUtils.getError(e));
 			re.setState("ERROR");
+			re.setThreadid(t.getName());
 			if(ex.getMessage() == null || "".equals(ex.getMessage())) {
 				re.setMsg("TX-SYSTEM: java.lang.NullPointerException 未将对象引用到对象实例!");
 			}else {
@@ -153,6 +165,21 @@ public class ExtAjaxOfJsService extends HttpServlet{
 				out.close();
 			}
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void log4jJdbcThread(HttpServletRequest req, Thread t) {
+		SqlLogsDatas sqllogsdata = sqlthreadlocat.get() ;
+		if(sqllogsdata == null ) {
+			sqllogsdata= new SqlLogsDatas();
+		}
+		sqllogsdata.setThreadid(t.getName());
+		
+		if(req.getSession().getAttribute("USERINFO") != null) {
+			Map<String,Object> parame = (Map<String, Object>) req.getSession().getAttribute("USERINFO");
+			sqllogsdata.setUserid((String)parame.get("id"));
+		}
+		sqlthreadlocat.set(sqllogsdata);
 	}
 	public static Map<String,String> resolvePath(String path) {
 		String res[] = path.split(":");

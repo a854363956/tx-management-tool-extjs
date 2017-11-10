@@ -56,7 +56,8 @@ dependencies {
             'org.apache.poi:poi-ooxml:3.17',
             'com.mchange:c3p0:0.9.5.2',
             'mysql:mysql-connector-java:5.1.38',
-            'net.sf.jasperreports:jasperreports:6.1.0'
+            'net.sf.jasperreports:jasperreports:6.1.0',
+            'com.googlecode.log4jdbc:log4jdbc:1.2'
     )
     
      // Use JUnit test framework
