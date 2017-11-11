@@ -1,7 +1,3 @@
-/**
- * ${title}
- * @returns
- */
 (function(){
 	var cmp = Ext.Panel.create({
 		region : 'center',

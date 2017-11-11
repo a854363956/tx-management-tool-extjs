@@ -12,6 +12,15 @@
 	Ext.define("Tx.MessageBox",{
 		//定义静态方法子类不能继承
 		statics:{
+			toast:function(message){
+	            Ext.toast({
+	                html: message,
+	                closable: false,
+	                align: 't',
+	                slideInDuration: 400,
+	                minWidth: 400
+	            });
+			},
 		 	error:function(message,onclick){
                 Ext.MessageBox.show({
                     title: '系统消息',
@@ -355,6 +364,7 @@
 			        }
 			    });
 			},
+			
 			getPageCode:function(path,callback){
 				var loadMarsk = new Ext.LoadMask(_center,{
 					   msg : '正在执行，请稍候......',
@@ -371,6 +381,39 @@
 			        failure: function (response, options) {
 			        	Tx.MessageBox.error('请求超时或网络故障,错误编号：' + response.status);
 			        	loadMarsk.hide();
+			        }
+			    });
+			},
+			/**
+			 *  url       要发送的地址
+			 *  dom       当前遮挡的dom节点
+			 *  callback  完成后的回调函数
+			 */
+			get:function(obj){
+				var loadMarsk;
+				if(obj.dom!=null){
+					loadMarsk = new Ext.LoadMask(obj.dom,{
+					   msg : '正在执行，请稍候......',
+					   removeMask : true// 完成后移除
+					});
+					loadMarsk.show();
+				}
+				
+				Ext.Ajax.request({
+			        url: obj.url,
+			        method: 'GET',
+			        success: function (response, options) {
+			        	var json = response.responseText;
+			        	obj.callback(json);
+			        	if(obj.dom!=null){
+			        		loadMarsk.hide();
+			        	}
+			        },
+			        failure: function (response, options) {
+			        	Tx.MessageBox.error('请求超时或网络故障,错误编号：' + response.status);
+			        	if(obj.dom!=null){
+			        		loadMarsk.hide();
+			        	}
 			        }
 			    });
 			},
@@ -470,6 +513,7 @@
 					    }}*/
 				   });
 				   self.editor.setSize(width,height);
+				   self._initValue = self._initValue || "";
 				   self.editor.setValue(self._initValue);
 				   self.editor.setOption("styleActiveLine", {nonEmpty: true});
 				   /*self.editor.on("change",function(self_,arg){
@@ -526,6 +570,7 @@
 					    }}*/
 				   });
 				   self.editor.setSize(width,height);
+				   self._initValue = self._initValue || "";
 				   self.editor.setValue(self._initValue);
 				   self.editor.setOption("styleActiveLine", {nonEmpty: true});
 				   /*self.editor.on("change",function(self_,arg){
@@ -588,6 +633,7 @@
 					    }}*/
 				   });
 				   self.editor.setSize(width,height);
+				   self._initValue =self._initValue || "";
 				   self.editor.setValue(self._initValue);
 				   self.editor.setOption("styleActiveLine", {nonEmpty: true});
 				   /*self.editor.on("change",function(self_,arg){
