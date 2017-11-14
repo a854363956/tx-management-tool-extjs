@@ -270,12 +270,18 @@ Ext.application({
 													callback:function(result){
 														var datas = Ext.JSON.decode(result.datas).datas;
 														for(var i=0;i<datas.length;i++){
-															node.appendChild({
-																id:"id_"+datas[i].id,
-																leaf:datas[i].leaf == 0? false:true,
-																text:datas[i].label,
-																datas:datas[i]
-															});
+															var config = {
+																	id:"id_"+datas[i].id,
+																	leaf:datas[i].leaf == 0? false:true,
+																	text:datas[i].label,
+																	datas:datas[i]
+																};
+															if(config.leaf == true){
+																if(datas[i].icon_class !="default"){
+																	config.iconCls=datas[i].icon_class;
+																}
+															}
+															node.appendChild(config);
 														}
 													}
 												});

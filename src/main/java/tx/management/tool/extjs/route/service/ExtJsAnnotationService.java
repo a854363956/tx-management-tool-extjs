@@ -19,6 +19,41 @@ import tx.management.tool.extjs.utils.StringUtils;
 
 public class ExtJsAnnotationService extends HttpServlet{
 	private static final long serialVersionUID = -3174482034482972232L;
+	@Override
+	protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+		return;
+	}
+
+	@Override
+	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+		return;
+	}
+
+	@Override
+	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+		return;
+	}
+
+	@Override
+	protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+		return;
+	}
+
+	@Override
+	protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+		return;
+	}
+	
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+		return;
+	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -31,8 +66,6 @@ public class ExtJsAnnotationService extends HttpServlet{
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
-		
-		// 
 		FileInputStream fis =new FileInputStream(f);
 		try {
 			byte[] bytes = StringUtils.readInputStreamByte(fis);
@@ -46,6 +79,4 @@ public class ExtJsAnnotationService extends HttpServlet{
 			os.close();
 		}
 	}
-
-	
 }

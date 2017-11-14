@@ -419,11 +419,12 @@
 			},
 			/**
 			 *  cmd       要发送的地址
-			 *  parames   发送给服务器的参数
+			 *  datas   发送给服务器的参数
 			 *  dom       当前遮挡的dom节点
 			 *  callback  完成后的回调函数
 			 */
 			post:function(obj){
+				obj.dom = obj.dom || null;
 				var loadMarsk;
 				if(obj.dom!=null){
 					loadMarsk = new Ext.LoadMask(obj.dom,{
@@ -435,6 +436,7 @@
 				
 				Ext.Ajax.request({
 			        url: 'ExtAjaxOfJsService/Request/POST',
+			        async: true,  
 			        params: {
 			        	cmd:obj.cmd,
 			        	datas:$fnDesEncryption(Ext.JSON.encode(obj.datas)),
@@ -664,7 +666,8 @@
 							items:obj.items,
 							queryname:obj.queryname,
 							height:obj.height,
-							columns:result
+							columns:result,
+							id:obj.id
 						});
 						obj.callback(grid);
 					}
@@ -774,10 +777,14 @@
 				var columns = obj.columns;
 				var queryname= new Array();
 				var defaultValue;
+				var bool=false;
 				for(var i=0;i<columns.length;i++){
 					if(columns[i].xtype != "rownumberer" && columns[i].hidden !=true){
+						if(bool == false){
+							defaultValue=obj.queryname || columns[i].dataIndex;
+						}
 						queryname.push([columns[i].dataIndex,columns[i].text]);
-						defaultValue=obj.queryname || columns[i].dataIndex;
+						bool=true;
 					}
 				}
 				var store = Tx.auto.TxGrid.getStore(obj.sqlid);
@@ -924,6 +931,10 @@
 							},'条记录']
 			        }],
 				    columns: obj.columns
+				}
+				obj.id  = obj.id || null;
+				if(obj.id!=null){
+					config.id = obj.id;
 				}
 				var height = obj.height || null;
 				if(height!=null){

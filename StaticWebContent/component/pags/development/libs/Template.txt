@@ -1,8 +1,8 @@
 (function(){
-	var cmp = Ext.Panel.create({
+	var _component = Ext.Panel.create({
 		region : 'center',
 		layout : "border",
 		items:[]
 	});
-	return cmp;
+	return _component;
 })();

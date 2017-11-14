@@ -48,6 +48,21 @@ import tx.management.tool.extjs.utils.StringUtils;
 public class BaseSystemBusiness {
 	@Resource(name="TxSessionFactory")
 	private TxSessionFactory txSessionFactory;
+	
+	/**
+	 * 获取组件的信息
+	 * @param re
+	 * @return
+	 * @throws SQLException
+	 */
+	public ResponseEntitys fnGetComponentInfo(RequestEntitys re) throws SQLException {
+		Map<String,Object> parame = new HashMap<String,Object>();
+		parame.put("cname", JSON.parseObject(re.getDatas()).getString("cname"));
+		List<Map<String,Object>> datas = txSessionFactory.getTxSession().select("select * from tx_sys_component where cname = ${cname}", parame).getDatas();
+		ResponseEntitys rpe = new ResponseEntitys();
+		rpe.setDatas(JSON.toJSONString(datas));
+		return rpe;
+	}
 	/**
 	 * 获取操作系统的一些信息  暂时不使用,考虑到群集此方法设计有问题
 	 * @param re
@@ -388,17 +403,22 @@ public class BaseSystemBusiness {
 		try {
 			t=txSessionFactory.getTxSession().openTransactional();
 			Map<String,Object> parame= JSON.parseObject(re.getDatas(),new TypeReference<Map<String,Object>>(){});
-			int i =txSessionFactory.getTxSession().create("tx_sys_menu", parame);  
+			int i =txSessionFactory.getTxSession().save("tx_sys_menu", parame);  
 			ResponseEntitys rpe = new ResponseEntitys();
 			List<Map<String,Object>> result = txSessionFactory.getTxSession().select("select * from tx_base_role", null).getDatas();
 			for(Map<String,Object> m :result) {
-				Map<String,Object> ma = new HashMap<String,Object>();
-				ma.put("id", StringUtils.getUUID());
-				ma.put("roleid", m.get("id"));
-				ma.put("menuid", parame.get("id"));
-				ma.put("state", 1);
-				int num = txSessionFactory.getTxSession().create("tx_sys_menu_authorization", ma);
-				i+=num;
+				Map<String,Object> sparame = new HashMap<String,Object>();
+			    sparame.put("menuid", parame.get("id"));
+			    List<Map<String, Object>> datas__ = txSessionFactory.getTxSession().select("select * from tx_sys_menu_authorization where menuid=${menuid}",sparame).getDatas();
+			    if(datas__.size() == 0) {
+			    	Map<String,Object> ma = new HashMap<String,Object>();
+			    	ma.put("id", StringUtils.getUUID());
+			    	ma.put("roleid", m.get("id"));
+			    	ma.put("menuid", parame.get("id"));
+			    	ma.put("state", 1);
+			    	int num = txSessionFactory.getTxSession().create("tx_sys_menu_authorization", ma);
+			    	i+=num;
+			    }
 			}
 			rpe.setDatas(""+i);
 			t.commit();

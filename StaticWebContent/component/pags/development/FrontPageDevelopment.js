@@ -3,6 +3,7 @@
  * @returns
  */
 (function(){
+	var vs_current_data;
 	var cmp = Ext.Panel.create({
 		region : 'center',
 		layout : "border",
@@ -42,28 +43,117 @@
 		},{
 			text:"删除所有组件",
 			iconCls:"fa fa-trash-o",
+			handler:function(){
+				Ext.getCmp("_Visual_Design_Preview").removeAll();
+				Ext.getCmp("_treepanel").getRootNode().removeAll();
+			}
+			
 		}]
 	});
-	
+	var store = Ext.data.Store.create({
+		data:[]
+	});
+	var grid = Ext.grid.Panel.create({
+		 store:store,
+		 dockedItems: [{
+			    dock : 'bottom',
+			    xtype :'toolbar',
+			    items:[{
+			    	text:"添加属性",
+			    	iconCls:"fa fa-plus-circle",
+			    },"-",{
+			    	text:"移除属性",
+			    	iconCls:"fa fa-minus-circle"
+			    }]
+		 }],
+		 plugins:['bufferedrenderer',{
+				ptype: 'cellediting',
+		        clicksToEdit: 1,
+		        listeners:{
+		        	afteredit:function( self, newData, eOpts){
+		        		var selection =grid.getView().getSelectionModel().getSelection()[0];
+		        		var name = selection.data.aname;
+		        		var value= selection.data.avalue;
+		        		var datasAll  =grid.store.data.items;
+		        		if(typeof(selection) != "undefined"){
+		        			var id;
+		        			for(var i=0;i<datasAll.length;i++){
+		        				if(datasAll[i].data.aname=="id"){
+		        					id=datasAll[i].data.avalue;
+		        					break;
+		        				}
+		        			}
+		        			var v_ = Number.parseInt(value);
+		        			if(window.isNaN(v_)){
+		        				Ext.getCmp(id)["set"+ Ext.util.Format.capitalize(name)](value);
+		        			}else{
+		        				Ext.getCmp(id)["set"+ Ext.util.Format.capitalize(name)](v_);
+		        			}
+		        		}
+			        }
+		        }
+		 }],
+		 columns: [
+		        {
+		            text: '属性名称',
+		            dataIndex: 'aname',
+		            width:"49%"
+		        },
+		        {
+		            text: '属性值',
+		            dataIndex: 'avalue',
+		            editor:{
+		            	xtype:"textfield",
+		            },
+		            width:"49%"
+		        }
+		    ]
+	});
+	var gridpanel = Ext.Panel.create({
+		region : 'center',
+		width : "100%",
+		height:250,
+		layout:{  
+	        type:'hbox',  
+	        align : 'stretch',  
+	        pack  : 'start'  
+	    },  
+	    defaults:{  
+	       flex:1  
+	    }, 
+	    items:[grid]
+	});
 	var attr= Ext.Panel.create({
 		region : 'east',
 		minWidth:120,
 		//split : true,
+		//height:"100%",
 		hideHeaders : true,
 		width : "23%",
 		minWidth:120,
 		items : [{
-			xtype:"panel",
+			xtype:"treepanel",
+			id:"_treepanel",
 			title : "布局节点",
 			height:300,
+			border : false,// 表框
+			autoScroll : true,// 自动滚动条
+			split : true,
+			animate : true,// 动画效果
+			rootVisible : false,// 根节点是否可见
+			split : true,
+			collapsible : true,
+			hideHeaders : true,
 			//layout : "border",
 			items : [],
-		},{
-			xtype:"panel",
-			title : "组件属性",
-			//layout : "border",
-			items : [],
-		}],
+			listeners:{
+				beforecellclick :function(self, td, cellIndex, record, tr, rowIndex, e, eOpts ){
+					store.removeAll();
+					var datas = record.data.datas;
+					store.add(datas);
+				}
+			}
+		},gridpanel],
 	});
 	
 	var layout_control = Ext.tree.TreePanel.create({
@@ -76,6 +166,13 @@
 		split : true,
 		collapsible : true,
 		hideHeaders : true,
+		viewConfig : {  
+            plugins : {  
+                ddGroup : '_v_s',  
+                ptype : 'treeviewdragdrop',  
+                enableDrop : false  
+            }  
+       }, 
 		listeners:{
 			beforerender:function(self){
 				self.getRootNode().appendChild({
@@ -102,6 +199,13 @@
 		split : true,
 		collapsible : true,
 		hideHeaders : true,
+		viewConfig : {  
+            plugins : {  
+                ddGroup : '_v_s',  
+                ptype : 'treeviewdragdrop',  
+                enableDrop : false  
+            }  
+       }, 
 		listeners:{
 			beforerender:function(self){
 				self.getRootNode().appendChild({
@@ -129,13 +233,13 @@
 		split : true,
 		collapsible : true,
 		hideHeaders : true,
-		 viewConfig : {  
+		viewConfig : {  
              plugins : {  
-                 ddGroup : 'demo',  
+                 ddGroup : '_v_s',  
                  ptype : 'treeviewdragdrop',  
                  enableDrop : false  
              }  
-         }, 
+        }, 
 		listeners:{
 			beforerender:function(self){
 				self.getRootNode().appendChild({
@@ -231,15 +335,124 @@
 					title : "可视化编辑",
 					id : "_Visual_Design",
 					layout : "border",
-					items : [],
+					items : [{
+						xtype:"panel",
+						region : 'center',
+						id:"_Visual_Design_Preview",
+						items:[],
+						listeners:{
+							afterrender:function(){
+								var gridEl=Ext.getCmp('_Visual_Design').body.dom;  
+					            var gridDropTarget=Ext.create('Ext.dd.DropTarget',gridEl,{  
+					                ddGroup:'_v_s',  
+					                notifyEnter:function(source,e,data){  
+					                	vs_current_data = data.records[0].data.datas;
+					                }, 
+					            });
+							},
+						}
+					}],
 					listeners:{
-						afterrender:function(){
-							var gridEl=Ext.getCmp('_Visual_Design').body.dom;  
-				            var gridDropTarget=Ext.create('Ext.dd.DropTarget',gridEl,{  
-				                ddGroup:'demo',  
-				                notifyEnter:function(source,e,data){  
-				                }  
-				            });
+						el:{
+							mouseup:function(self){
+								var selection = Ext.getCmp("_treepanel").getView().getSelectionModel().getSelection()[0];
+								if(typeof(selection)=="undefined"){
+									//------------添加grid--------------------
+									if(typeof(vs_current_data)!="undefined"){
+										if(vs_current_data == "grid"){
+											Tx.MessageBox.prompt("请输入表格的id",function(txt){
+												var config ={
+														sqlid:txt,
+														id:"vs"+window.GUID(),
+														height:300
+												}
+												Tx.auto.TxGrid.getGrid({
+													sqlid:config.sqlid,
+													id:config.id,
+													height:config.height,
+													callback:function(grid){
+														Ext.getCmp("_Visual_Design_Preview").add(grid);
+														Tx.AjaxRequest.post({
+															cmd:"spring:baseSystemBusiness#fnGetComponentInfo",      
+															datas:{
+																cname:vs_current_data
+															},
+															callback :function(datas){
+																var attrs = Ext.JSON.decode(datas.datas);
+																for(var i=0;i<attrs.length;i++){
+																	if(attrs[i].aname == "sqlid"){
+																		attrs[i].avalue=config.sqlid
+																	}else if(attrs[i].aname == "id"){
+																		attrs[i].avalue=config.id
+																	}
+																}
+																Ext.getCmp("_treepanel").getRootNode().appendChild({
+																	leaf:false,
+																	iconCls:"fa fa-tablet",
+																	id:"tree"+config.id,
+																	text:vs_current_data,
+																	datas:attrs
+																});
+																//store.add(attrs); //添加数据
+																Ext.getCmp("_treepanel").getSelectionModel().select(Ext.getCmp("_treepanel").store.find("id","tree"+config.id), true);
+																var tree = Ext.getCmp("_treepanel").getView().getSelectionModel().getSelection()[0];
+																vs_current_data=undefined;
+															}
+														});
+													}
+												});
+											});
+										}
+									}
+									//-----------------------------添加gird end
+								}else{
+									var node = selection.data;
+									var datas= node.datas;
+									var cmpid;
+									for(var i=0;i<datas.length;i++){
+										if(datas[i].aname=="id"){
+											cmpid=datas[i].avalue;
+											break;
+										}
+									}
+									if(vs_current_data == "button"){
+										var top = Ext.getCmp(cmpid).getDockedItems("toolbar[dock=\"top\"]")[0];
+										
+										Tx.AjaxRequest.post({
+											cmd:"spring:baseSystemBusiness#fnGetComponentInfo",      
+											datas:{
+												cname:vs_current_data
+											},
+											callback :function(datas){
+												var attrs = Ext.JSON.decode(datas.datas);
+												var config = {};
+												config.id="vs"+window.GUID();
+												for(var i=0;i<attrs.length;i++){
+													var value = attrs[i].avalue || null ;
+													if(attrs[i].aname == "id"){
+														attrs[i].avalue = config.id;
+													}
+													if(value!= null ){
+														config[attrs[i].aname] = attrs[i].avalue;
+													}
+												}
+												top.add(config);
+												selection.appendChild({
+													leaf:false,
+													iconCls:"fa fa-tablet",
+													id:"tree"+config.id,
+													text:vs_current_data,
+													datas:attrs
+												});
+												selection.expand();
+												vs_current_data=undefined;
+											}
+										});
+										
+									}
+								}
+								
+							}	
 						}
 					}
 				},{

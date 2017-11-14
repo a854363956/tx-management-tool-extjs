@@ -1,5 +1,6 @@
 /**
  * 打印方案维护
+ * 
  * @returns
  */
 (function(){
@@ -68,18 +69,24 @@
 			listeners:{
 				click:function(){
 					if(Ext.getCmp("__print_program_maintenance_page_form_json").isValid()){
-						var da_ = Ext.getCmp("__print_program_maintenance_page_form_json").getForm().getValues()
-						inputjson.hide();
-						var selection = grid.getView().getSelectionModel().getSelection()[0];
-						if(typeof(selection)!="undefined"){
-							var printid =selection.data.id;
-							Tx.Print.fnPrintDirectly({
-								printid:printid,
-								datas:Ext.JSON.decode(da_.content)
-							});
-						}else{
-							Tx.MesssageBox.error("未选中数据,无法进行操作!");
+						var da_ = Ext.getCmp("__print_program_maintenance_page_form_json").getForm().getValues();
+						try {
+							var datas = Ext.JSON.decode(da_.content);
+							var selection = grid.getView().getSelectionModel().getSelection()[0];
+							if(typeof(selection)!="undefined"){
+								var printid =selection.data.id;
+								Tx.Print.fnPrintDirectly({
+									printid:printid,
+									datas:datas
+								});
+							}else{
+								Tx.MesssageBox.error("未选中数据,无法进行操作!");
+							}
+						} catch (e) {
+							console.log(e);
+							Tx.MessageBox.error(e.message);
 						}
+						
 					}
 				}
 			}
@@ -90,18 +97,25 @@
 				click:function(){
 					if(Ext.getCmp("__print_program_maintenance_page_form_json").isValid()){
 						var da_ = Ext.getCmp("__print_program_maintenance_page_form_json").getForm().getValues()
-						inputjson.hide();
-						var selection = grid.getView().getSelectionModel().getSelection()[0];
-						if(typeof(selection)!="undefined"){
-							var printid =selection.data.id;
-							Tx.Print.fnPrintPreview({
-								printid:printid,
-								datas:Ext.JSON.decode(da_.content),
-								dom:addData
-							});
-						}else{
-							Tx.MesssageBox.error("未选中数据,无法进行操作!");
+						try {
+							var datas = Ext.JSON.decode(da_.content);
+							var selection = grid.getView().getSelectionModel().getSelection()[0];
+							if(typeof(selection)!="undefined"){
+								var printid =selection.data.id;
+								Tx.Print.fnPrintPreview({
+									printid:printid,
+									datas:datas,
+									dom:addData
+								});
+								inputjson.hide();
+							}else{
+								Tx.MesssageBox.error("未选中数据,无法进行操作!");
+							}
+						} catch (e) {
+							console.log(e);
+							Tx.MessageBox.error(e.message);
 						}
+					
 						
 					}
 				}

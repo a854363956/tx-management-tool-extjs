@@ -6,33 +6,34 @@
 	 var grid,current_node,tree;
 	 var treechs = new Array();
 	 function refresh(){
-		 for(var i =0;i<treechs.length;i++){
+		for(var i =0;i<treechs.length;i++){
  			var node = treechs[i];
- 			var root = node.getRootNode()
-				for(var i =0;i<root.childNodes;i++){
-					root.childNodes[i].removeAll();
-				}
- 			
- 			Tx.AjaxRequest.post({
-					cmd:"spring:baseSystemBusiness#getTxSysMenu",
-					datas:{
-						father:data.id,
-						permissions:"0",
-					},
-					dom:null,
-					callback:function(result){
-						
-						var datas = Ext.JSON.decode(result.datas).datas;
-						for(var i=0;i<datas.length;i++){
-							root.appendChild({
-								id:"_id_"+datas[i].id,
-								leaf:datas[i].leaf == 0? false:true,
-								text:datas[i].label+" |序号:"+datas[i].sorting,
-								datas:datas[i]
-							});
-						}
-					}
-				});
+ 			var selection = node.getView().getSelectionModel().getSelection()[0];
+ 			if(typeof(selection) != "undefined"){
+ 				var parentNode = selection.parentNode;
+ 				if(parentNode!=null){
+ 					parentNode.removeAll();
+ 					Tx.AjaxRequest.post({
+ 						cmd:"spring:baseSystemBusiness#getTxSysMenu",
+ 						datas:{
+ 							father:parentNode.id  == "root" ?node.__id:parentNode.id ,
+ 							permissions:"0",
+ 						},
+ 						dom:null,
+ 						callback:function(result){
+ 							var datas = Ext.JSON.decode(result.datas).datas;
+ 							for(var i=0;i<datas.length;i++){
+ 								parentNode.appendChild({
+ 									id:"_id_"+datas[i].id,
+ 									leaf:datas[i].leaf == 0? false:true,
+ 									text:datas[i].label+" |序号:"+datas[i].sorting,
+ 									datas:datas[i]
+ 								});
+ 							}
+ 						}
+ 					});
+ 				}
+ 			}
  		}
 	 }
 	 var updateData =Tx.Window.create({
@@ -87,8 +88,8 @@
 								dom:updateData,
 								callback:function(result){
 									if(result.datas="1"){
+										refresh();
 										Tx.MessageBox.info("保存成功,受影响行数["+result.datas+"]",function(){
-											refresh();
 											updateData.hide();
 										});
 									}else{
@@ -217,12 +218,11 @@
 	        	text:'修改属性',
 	        	iconCls:"fa fa-pencil-square",
 	            handler:function(){
-	            	
 	            	if(typeof(current_node) == "undefined"){
 	            		Tx.MessageBox.error("请选择点击一行后,在进行操作!");
 	            		return;
 	            	}
-	            	Ext.getCmp('__menu_data_maintenance_page_update_form').form.reset()
+	            	Ext.getCmp('__menu_data_maintenance_page_update_form').form.reset();
 					Ext.getCmp("__menu_data_maintenance_page_update_form").getForm().setValues({
 						id:current_node.id,
 						sorting:current_node.sorting,
@@ -309,6 +309,7 @@
 				var label = data.label;
 				var treech = Ext.tree.TreePanel.create({
 					title:label,
+					__id:data.id,
 					border : false,// 表框
 					autoScroll : true,// 自动滚动条
 					split : true,
@@ -466,5 +467,10 @@
 			grid.store.load();
 		}
 	});
+	cmp._destroy=function(){
+		updateData.destroy();
+		addData.destroy();
+		contextmenu.destroy();
+	}
 	return cmp;
 })();
