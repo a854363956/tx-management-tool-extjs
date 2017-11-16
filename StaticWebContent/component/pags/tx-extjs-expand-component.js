@@ -196,7 +196,7 @@
 			if(txt == null || typeof(txt) == "undefined"){
 				return "";
 			}else{
-				return Ext.util.Base64.decode($des_decrypt(txt,Ext.util.Cookies.get("key_0"),Ext.util.Cookies.get("key_1"),Ext.util.Cookies.get("key_2")));
+				return $des_decrypt(Ext.util.Base64.decode(txt),Ext.util.Cookies.get("key_0"),Ext.util.Cookies.get("key_1"),Ext.util.Cookies.get("key_2"));
 			}
 		} catch (e) {
 		}

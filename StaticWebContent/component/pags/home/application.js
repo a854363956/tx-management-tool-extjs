@@ -1,4 +1,4 @@
-var VERSION = "000.000.002";
+var VERSION = "000.000.003";
 Ext.application({
 		requires : [ 'Ext.ux.DateTimeField','Ext.ux.TabCloseMenu' ],
 		launch : function() {

@@ -1,5 +1,5 @@
 (function(){
-	
+	var addData;
 	var center = Ext.Panel.create({
 		region : 'center',
 		layout:{  
@@ -57,7 +57,7 @@
 				queryname:"role_name",
 				callback:function(rolegrid){
 					
-					var addData=Tx.Window.create({
+					addData=Tx.Window.create({
 						title : "人员信息维护,初始化密码123456",
 					    closable : false,
 					    width : "20%",
