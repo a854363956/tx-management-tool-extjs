@@ -79,7 +79,7 @@
 				sqlid:"905258cfbe6d49d0a240927453b25539",
 				queryname:"actual_name",
 				callback:function(result){
-					
+					debugger;
 					//rowclick
 					rolegrid.addListener("rowclick",function(self, record, element, rowIndex, e, eOpts){
 						var proxy = result.store.getProxy();
@@ -101,10 +101,8 @@
 							"conditionSymbol":"2",
 						});
 						result.store.load();
-						b.add(result);
 					}
-					
-					
+					b.add(result);
 					addData =Tx.Window.create({
 						title : "新增数据",
 					    closable : false,

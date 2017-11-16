@@ -1,10 +1,10 @@
-var VERSION = "000.000.003";
+var VERSION = "000.000.004";
 Ext.application({
 		requires : [ 'Ext.ux.DateTimeField','Ext.ux.TabCloseMenu' ],
 		launch : function() {
 			Ext.onReady(function () {
 				///阻止浏览器默认右键菜单 userid
-				document.oncontextmenu = function () { return false }
+				//document.oncontextmenu = function () { return false }
 				var tabscript ={};
 				var isInitTreeMenu=false;
 				var updatePassword = Tx.Window.create({
