@@ -9,68 +9,7 @@
 		    return v.toString(16);
 		  });
 	}
-	Ext.define("Tx.MessageBox",{
-		//定义静态方法子类不能继承
-		statics:{
-			toast:function(message){
-	            Ext.toast({
-	                html: message,
-	                closable: false,
-	                align: 't',
-	                slideInDuration: 400,
-	                minWidth: 400
-	            });
-			},
-		 	error:function(message,onclick){
-                Ext.MessageBox.show({
-                    title: '系统消息',
-                    msg: message,
-                    buttons: Ext.MessageBox.OK,
-                    fn:onclick||function(){},
-                    icon: Ext.MessageBox.ERROR
-                });
-            },
-            info:function(message,onclick){
-                Ext.MessageBox.show({
-                    title: '系统消息',
-                    msg: message,
-                    buttons: Ext.MessageBox.OK,
-                    fn:onclick||function(){},
-                    icon: Ext.MessageBox.INFO
-                });
-            },
-            warning:function(message,onclick){
-                Ext.MessageBox.show({
-                    title: '系统消息',
-                    msg: message,
-                    buttons: Ext.MessageBox.OK,
-                    fn:onclick||function(){},
-                    icon: Ext.MessageBox.WARNING
-                });
-            },
-            prompt:function(message,onclick){
-            	Ext.MessageBox.prompt("系统消息",message,function(state,txt){
-            		if(state == "ok"){
-            			onclick(txt);
-            		}
-            	});
-            },
-            question:function(message,onclick){
-                Ext.MessageBox.show({
-                    title: '系统消息',
-                    msg: message,
-                    buttons: Ext.MessageBox.OKCANCEL,
-                    fn:function(txt){
-                    	var click = onclick||function(){};
-                    	if(txt == "ok"){
-                    		click();
-                    	}
-                    },
-                    icon: Ext.MessageBox.QUESTION
-                });
-            },
-		}
-	});
+
 	Ext.define("Tx.Window",{
 		extend:"Ext.Window",
 		closeAction:"method-hide",
@@ -991,6 +930,115 @@
 				store.getModel().identifier=Ext.data.identifier.Uuid.create();
 				return store;
 			}
+		}
+	});
+	var $$MESSAGE_DATAS={};
+	Ext.define("Tx.MessageBox",{
+		//定义静态方法子类不能继承
+		statics:{
+			datas:function(id,title,callback){
+				callback = callback || function(){ return true;};
+				if(typeof($$MESSAGE_DATAS[id])!="undefined"){
+					$$MESSAGE_DATAS[id].show();
+				}else{
+					Tx.auto.TxGrid.getGrid({
+						sqlid:id,
+						callback:function(grid){
+							
+							var center = Ext.Panel.create({
+								region : 'center',
+								layout:{  
+							        type:'hbox',  
+							        align : 'stretch',  
+							        pack  : 'start'  
+							    },  
+							    defaults:{  
+							       flex:1  
+							    },  
+								items:[grid]
+							});
+							var addData =Tx.Window.create({
+								title : title,
+							    closable : true,
+							    width : 800,
+							    height : 400,
+							    resizable : false, // 窗口可拖动改变大小;
+							    modal : true, // 设置弹窗之后屏蔽掉页面上所有的其他组件;
+							    plain : true, // 使窗体主体更融于框架颜色;
+							    layout : "border",
+							    items:[center]
+							});
+							$$MESSAGE_DATAS[id]=addData;
+							addData.show();
+							grid.addListener('rowdblclick', function(self, record, element, rowIndex, e, eOpts){
+								var boolean = callback(record.data,addData);
+								if(boolean == true){
+									addData.hide();
+								}
+							});
+						}
+					});
+				}
+				
+				
+			},
+			toast:function(message){
+	            Ext.toast({
+	                html: message,
+	                closable: false,
+	                align: 't',
+	                slideInDuration: 400,
+	                minWidth: 400
+	            });
+			},
+		 	error:function(message,onclick){
+                Ext.MessageBox.show({
+                    title: '系统消息',
+                    msg: message,
+                    buttons: Ext.MessageBox.OK,
+                    fn:onclick||function(){},
+                    icon: Ext.MessageBox.ERROR
+                });
+            },
+            info:function(message,onclick){
+                Ext.MessageBox.show({
+                    title: '系统消息',
+                    msg: message,
+                    buttons: Ext.MessageBox.OK,
+                    fn:onclick||function(){},
+                    icon: Ext.MessageBox.INFO
+                });
+            },
+            warning:function(message,onclick){
+                Ext.MessageBox.show({
+                    title: '系统消息',
+                    msg: message,
+                    buttons: Ext.MessageBox.OK,
+                    fn:onclick||function(){},
+                    icon: Ext.MessageBox.WARNING
+                });
+            },
+            prompt:function(message,onclick){
+            	Ext.MessageBox.prompt("系统消息",message,function(state,txt){
+            		if(state == "ok"){
+            			onclick(txt);
+            		}
+            	});
+            },
+            question:function(message,onclick){
+                Ext.MessageBox.show({
+                    title: '系统消息',
+                    msg: message,
+                    buttons: Ext.MessageBox.OKCANCEL,
+                    fn:function(txt){
+                    	var click = onclick||function(){};
+                    	if(txt == "ok"){
+                    		click();
+                    	}
+                    },
+                    icon: Ext.MessageBox.QUESTION
+                });
+            },
 		}
 	});
 })();

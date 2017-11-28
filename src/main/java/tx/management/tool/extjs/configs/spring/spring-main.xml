@@ -30,6 +30,7 @@
 			</map>
 		</constructor-arg>
 	</bean>
+	
 	<!-- 配置Spring上下文获取的工具类 -->
 	<bean id="SpringContextUtil" class="tx.management.tool.extjs.utils.SpringContextUtil" />
 </beans>

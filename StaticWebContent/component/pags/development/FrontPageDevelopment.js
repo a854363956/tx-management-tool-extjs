@@ -3,7 +3,7 @@
  * @returns
  */
 (function(){
-	var vs_current_data;
+	var vs_current_data,grid;
 	var cmp = Ext.Panel.create({
 		region : 'center',
 		layout : "border",
@@ -46,6 +46,7 @@
 			handler:function(){
 				Ext.getCmp("_Visual_Design_Preview").removeAll();
 				Ext.getCmp("_treepanel").getRootNode().removeAll();
+				grid.store.removeAll();
 			}
 			
 		}]
@@ -53,7 +54,7 @@
 	var store = Ext.data.Store.create({
 		data:[]
 	});
-	var grid = Ext.grid.Panel.create({
+	grid = Ext.grid.Panel.create({
 		 store:store,
 		 dockedItems: [{
 			    dock : 'bottom',

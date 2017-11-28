@@ -27,12 +27,14 @@
 	}
   var grid_columns= Tx.auto.TxGrid.getTxGrid({
 	items:[{
-			text : "清空字段",
+			text : "手动删除选择的字段",
 			iconCls : "fa fa-trash-o",
 			handler:function(){
 				var selection = grid_columns.getView().getSelectionModel().getSelection()[0];
-				grid_columns.store.removeAll();
+				grid_columns.store.remove(selection);
 				grid_columns.store.load();
+				//grid_columns.store.removeAll();
+				//grid_columns.store.load();
 		    }
 		}],
 	queryname:"name",
@@ -179,7 +181,6 @@ var addData=  Tx.Window.create({
 		    						}
 		    					}
 	    						return false;
-	    						
 	    					}
 	    					for(var i=0;i<querySqlResultTableColumns.length;i++){
 	    						var data = querySqlResultTableColumns[i];
