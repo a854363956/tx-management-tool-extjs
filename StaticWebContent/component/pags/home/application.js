@@ -150,7 +150,7 @@ Ext.application({
 			        id:"_center",
 			        //activeTab : 0,
 			        items : [],
-			        plugins: Ext.ux.TabCloseMenu.create(),
+			        //plugins: Ext.ux.TabCloseMenu.create(),
 			        listeners:{
 			        }
 			    });
