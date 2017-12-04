@@ -21,3 +21,18 @@ StaticWebContent</br>
 5. 网络请求
 6. 编辑器
 7. 消息提示框
+
+##### 3. 系统工具类
+1. SMS短信
+2. EMail邮件
+3. 字符串操作
+4. Excel操作
+5. bean操作
+
+##### 4. 注意事项
+后台代码:</br>
+假如您要编写后台代码,如果发生后台异常,并且要抛出到服务以外那么您需要这样使用代码</br>
+`
+ //第一个参数是编号在EN-US.properties 和 ZH-CN.properties 里面维护的信息,第二个是替换符号,会自动替换字符串中%s的字符,按照他的出现顺序
+ throw TxInvokingException.throwTxInvokingExceptions("TX-000002"); 
+`
