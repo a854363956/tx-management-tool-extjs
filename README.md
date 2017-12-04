@@ -13,7 +13,7 @@ StaticWebContent</br>
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- prints #打印页面管理的模块路径</br>
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- system #系统基本参数维护的页面</br>
 
-##### 2. 自定义API,此API不在Extjs中的核心API
+##### 2. 系统自定义控件
 1. 表格
 2. 字符操作
 3. 窗口对象
