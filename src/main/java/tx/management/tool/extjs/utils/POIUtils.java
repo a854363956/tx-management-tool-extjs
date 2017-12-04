@@ -3,6 +3,7 @@ package tx.management.tool.extjs.utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ public class POIUtils {
 	 * @throws IOException
 	 */
 	public static byte[] fnQuerySqlResultToExcelBytes(List<Map<String,Object>> column,List<Map<String,Object>> datas,String sheetName) throws TxInvokingException, IOException {
+		SimpleDateFormat sdf =new SimpleDateFormat("yyyyMMdd");
 		SXSSFWorkbook  workbook = new SXSSFWorkbook();
 		Sheet hhsf = workbook.createSheet(sheetName);
 		Row first_row = hhsf.createRow(0);
@@ -53,7 +55,7 @@ public class POIUtils {
 				}else if(value instanceof Double) {
 					row_.createCell(col).setCellValue((Double)value);
 				}else if(value instanceof Date) {
-					row_.createCell(col).setCellValue(StringUtils.df.format(value));
+					row_.createCell(col).setCellValue(sdf.format(value));
 				}else {
 					throw TxInvokingException.throwTxInvokingExceptions("TX-000014", value.getClass().getName());
 				}

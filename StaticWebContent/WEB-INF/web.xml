@@ -9,6 +9,19 @@
 		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>
 	
+	<error-page>  
+	    <error-code>404</error-code>  
+	    <location>/index.html</location>  
+	</error-page>  
+	<error-page>  
+	    <error-code>500</error-code>  
+	    <location>/index.html</location>  
+	</error-page>  
+	<error-page>  
+	    <error-code>403</error-code>  
+	    <location>/index.html</location>  
+	</error-page>  
+	
 	<!--  字符编码过滤器 -->
 	<filter>
 		<filter-name>springUtf8Encoding</filter-name>

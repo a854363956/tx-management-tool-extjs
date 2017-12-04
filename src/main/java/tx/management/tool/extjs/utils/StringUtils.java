@@ -19,9 +19,10 @@ import tx.database.common.utils.string.SqlStringUtils;
 public class StringUtils {
 	private static String cmd = "^[a-zA-Z0-9_]+:[a-zA-Z0-9_]+#[a-zA-Z0-9_]+$";
 	private static String field="^[a-zA-Z0-9_]+$";
+	private static String number="^[0-9]+$";
 	private static final String PRIVATE_PASSWORD = "a756268d-68d6-434e-9864-900186b96d51";
-	public static final SimpleDateFormat df  = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	public static final SimpleDateFormat ymd = new SimpleDateFormat("yyyyMMdd");
+	private static final SimpleDateFormat df  = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	
 	/**
 	 * 判断当前的Cmd字符串是否符合规则,如果符合返回true 否则返回false
 	 * @param cmd
@@ -29,6 +30,14 @@ public class StringUtils {
 	 */
 	public static boolean testCmdString(String cmd) {
 		List<String> result = SqlStringUtils.findRegex(cmd,StringUtils.cmd );
+		if(result.size() != 0) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+	public static boolean isNumber(String str) {
+		List<String> result = SqlStringUtils.findRegex(str,StringUtils.number );
 		if(result.size() != 0) {
 			return true;
 		}else {

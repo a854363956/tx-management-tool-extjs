@@ -936,6 +936,14 @@
 	Ext.define("Tx.MessageBox",{
 		//定义静态方法子类不能继承
 		statics:{
+			/**
+			 * 弹出框
+			 * @parame id       表格维护的id
+			 * @parame title    弹出框的标题
+			 * @parame callback 双击一行数据后触发的时间
+			 *                                 -data  当前双击行获取的数据
+			 *                                 -comp  弹出框对象
+			 */
 			datas:function(id,title,callback){
 				callback = callback || function(){ return true;};
 				if(typeof($$MESSAGE_DATAS[id])!="undefined"){

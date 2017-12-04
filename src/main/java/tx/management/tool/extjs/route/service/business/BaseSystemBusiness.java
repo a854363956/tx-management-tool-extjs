@@ -249,7 +249,9 @@ public class BaseSystemBusiness {
 			t.commit();
 			return rpe;
 		}catch (Exception e) {
-			t.rollback();
+			if(t!=null) {
+				t.rollback();
+			}
 			throw e;
 		}
 		
@@ -424,7 +426,9 @@ public class BaseSystemBusiness {
 			t.commit();
 			return rpe;
 		} catch (Exception e) {
-			t.rollback();
+			if(t!=null) {
+				t.rollback();
+			}
 			throw e;
 		}
 		
@@ -477,7 +481,9 @@ public class BaseSystemBusiness {
 			t.commit();
 			return rpe;
 		} catch (Exception e) {
-			t.rollback();
+			if(t!=null) {
+				t.rollback();
+			}
 			throw e;
 		}
 	}

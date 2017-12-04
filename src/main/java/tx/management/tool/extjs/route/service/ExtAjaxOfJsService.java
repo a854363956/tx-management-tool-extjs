@@ -86,7 +86,6 @@ public class ExtAjaxOfJsService extends HttpServlet{
 		//-----------------------------------------------
 		log4jJdbcThread(req, t);
 		//---------------------------------------------------
-		
 		String request_date    = req.getParameter("request_date");
 		String cmd      = req.getParameter("cmd");
 		String datas    = req.getParameter("datas");
@@ -98,8 +97,12 @@ public class ExtAjaxOfJsService extends HttpServlet{
 		reqen.setDatas(datas);
 		reqen.setSession(req.getSession());
 		
+		
 		OutputStream out = resp.getOutputStream();
 		try {
+			if(!StringUtils.isNumber(request_date)) {
+				throw TxInvokingException.throwTxInvokingExceptions("TX-000019");
+			}
 			TxSessionFactory txsession = SpringContextUtil.getApplicationContext().getBean(TxSessionFactory.class);
 			QuerySqlResult result = txsession.getTxSession().select("select * from tx_sys_ajax_authorization where state = 0 ", null);
 			List<String> exitcmd = new ArrayList<String>();
@@ -123,7 +126,6 @@ public class ExtAjaxOfJsService extends HttpServlet{
 				String key_2 = (String) reqen.getSession().getAttribute("key_2");
 				String txt = des.Decrypt(new String(Base64.decode(reqen.getDatas())), key_0, key_1, key_2);
 				reqen.setDatas(txt);
-				@SuppressWarnings("unchecked")
 				Map<String,Object> r=(Map<String, Object>) reqen.getSession().getAttribute("USERINFO");
 				if(type!=null && !"".equals(type)) {
 					if("1".equals(type)) {
@@ -184,7 +186,11 @@ public class ExtAjaxOfJsService extends HttpServlet{
 			Throwable ex = StringUtils.getBottomError(e);
 			ResponseEntitys re = new ResponseEntitys();
 			re.setResponse_date(""+new Date().getTime());
-			re.setRequest_date(request_date);
+			if(!StringUtils.isNumber(request_date)) {
+				re.setRequest_date("");
+			}else {
+				re.setRequest_date(request_date);
+			}
 			re.setDatas(StringUtils.getError(e));
 			re.setState("ERROR");
 			re.setThreadid(t.getName());
@@ -290,8 +296,12 @@ public class ExtAjaxOfJsService extends HttpServlet{
 			e.printStackTrace();
 		}finally {
 			try {
-				reader.close();
-				fis.close();
+				if(reader!=null) {
+					reader.close();
+				}
+				if(fis!=null) {
+					fis.close();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

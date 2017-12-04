@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
+
 @Component
 public class DES {
 	public String Encrypt(String data, String firstKey, String secondKey, String thirdKey) {
@@ -12,15 +13,15 @@ public class DES {
 		@SuppressWarnings("rawtypes")
 		List firstKeyBt = null, secondKeyBt = null, thirdKeyBt = null;
 		int firstLength = 0, secondLength = 0, thirdLength = 0;
-		if (firstKey != null && firstKey != "") {
+		if (firstKey != null && !"".equals(firstKey)) {
 			firstKeyBt = getKeyBytes(firstKey);
 			firstLength = firstKeyBt.size();
 		}
-		if (secondKey != null && secondKey != "") {
+		if (secondKey != null && !"".equals(secondKey)) {
 			secondKeyBt = getKeyBytes(secondKey);
 			secondLength = secondKeyBt.size();
 		}
-		if (thirdKey != null && thirdKey != "") {
+		if (thirdKey != null && !"".equals(thirdKey)) {
 			thirdKeyBt = getKeyBytes(thirdKey);
 			thirdLength = thirdKeyBt.size();
 		}
@@ -29,8 +30,8 @@ public class DES {
 			if (leng < 4) {
 				int[] bt = strToBt(data);
 				int[] encByte = null;
-				if (firstKey != null && firstKey != "" && secondKey != null && secondKey != "" && thirdKey != null
-						&& thirdKey != "") {
+				if (firstKey != null && !"".equals(firstKey) && secondKey != null && !"".equals(secondKey)
+						&& thirdKey != null && !"".equals(thirdKey)) {
 					int[] tempBt;
 					int x, y, z;
 					tempBt = bt;
@@ -45,7 +46,7 @@ public class DES {
 					}
 					encByte = tempBt;
 				} else {
-					if (firstKey != null && firstKey != "" && secondKey != null && secondKey != "") {
+					if (firstKey != null && !"".equals(firstKey)   && secondKey != null && !"".equals(secondKey) ) {
 						int[] tempBt;
 						int x, y;
 						tempBt = bt;
@@ -57,7 +58,7 @@ public class DES {
 						}
 						encByte = tempBt;
 					} else {
-						if (firstKey != null && firstKey != "") {
+						if (firstKey != null && !"".equals(firstKey) ) {
 							int[] tempBt;
 							int x = 0;
 							tempBt = bt;
@@ -77,8 +78,8 @@ public class DES {
 					String tempData = data.substring(i * 4 + 0, i * 4 + 4);
 					int[] tempByte = strToBt(tempData);
 					int[] encByte = null;
-					if (firstKey != null && firstKey != "" && secondKey != null && secondKey != "" && thirdKey != null
-							&& thirdKey != "") {
+					if (firstKey != null && !"".equals(firstKey) && secondKey != null && !"".equals(secondKey)
+							&& thirdKey != null && !"".equals(thirdKey)) {
 						int[] tempBt;
 						int x, y, z;
 						tempBt = tempByte;
@@ -93,7 +94,7 @@ public class DES {
 						}
 						encByte = tempBt;
 					} else {
-						if (firstKey != null && firstKey != "" && secondKey != null && secondKey != "") {
+						if (firstKey != null && !"".equals(firstKey) && secondKey != null && !"".equals(secondKey)) {
 							int[] tempBt;
 							int x, y;
 							tempBt = tempByte;
@@ -105,7 +106,7 @@ public class DES {
 							}
 							encByte = tempBt;
 						} else {
-							if (firstKey != null && firstKey != "") {
+							if (firstKey != null && !"".equals(firstKey)) {
 								int[] tempBt;
 								int x;
 								tempBt = tempByte;
@@ -122,8 +123,8 @@ public class DES {
 					String remainderData = data.substring(iterator * 4 + 0, leng);
 					int[] tempByte = strToBt(remainderData);
 					int[] encByte = null;
-					if (firstKey != null && firstKey != "" && secondKey != null && secondKey != "" && thirdKey != null
-							&& thirdKey != "") {
+					if (firstKey != null && !"".equals(firstKey)  && secondKey != null && !"".equals(secondKey)  && thirdKey != null
+							&& !"".equals(thirdKey) ) {
 						int[] tempBt;
 						int x, y, z;
 						tempBt = tempByte;
@@ -138,7 +139,7 @@ public class DES {
 						}
 						encByte = tempBt;
 					} else {
-						if (firstKey != null && firstKey != "" && secondKey != null && secondKey != "") {
+						if (firstKey != null && !"".equals(firstKey)   && secondKey != null && !"".equals(secondKey) ) {
 							int[] tempBt;
 							int x, y;
 							tempBt = tempByte;
@@ -150,7 +151,7 @@ public class DES {
 							}
 							encByte = tempBt;
 						} else {
-							if (firstKey != null && firstKey != "") {
+							if (firstKey != null && !"".equals(firstKey)) {
 								int[] tempBt;
 								int x;
 								tempBt = tempByte;
@@ -180,15 +181,15 @@ public class DES {
 		@SuppressWarnings("rawtypes")
 		List firstKeyBt = null, secondKeyBt = null, thirdKeyBt = null;
 		int firstLength = 0, secondLength = 0, thirdLength = 0;
-		if (firstKey != null && firstKey != "") {
+		if (firstKey != null && !"".equals(firstKey)) {
 			firstKeyBt = getKeyBytes(firstKey);
 			firstLength = firstKeyBt.size();
 		}
-		if (secondKey != null && secondKey != "") {
+		if (secondKey != null && !"".equals(secondKey)) {
 			secondKeyBt = getKeyBytes(secondKey);
 			secondLength = secondKeyBt.size();
 		}
-		if (thirdKey != null && thirdKey != "") {
+		if (thirdKey != null && !"".equals(thirdKey)) {
 			thirdKeyBt = getKeyBytes(thirdKey);
 			thirdLength = thirdKeyBt.size();
 		}
@@ -204,8 +205,7 @@ public class DES {
 				intByte[j] = Integer.parseInt(strByte.substring(j, j + 1));
 			}
 			int[] decByte = null;
-			if (firstKey != null && firstKey != "" && secondKey != null && secondKey != "" && thirdKey != null
-					&& thirdKey != "") {
+			if (firstKey != null && !"".equals(firstKey) && secondKey != null && !"".equals(secondKey) && thirdKey != null && !"".equals(thirdKey)) {
 				int[] tempBt;
 				int x, y, z;
 				tempBt = intByte;
@@ -220,7 +220,7 @@ public class DES {
 				}
 				decByte = tempBt;
 			} else {
-				if (firstKey != null && firstKey != "" && secondKey != null && secondKey != "") {
+				if (firstKey != null && !"".equals(firstKey)   && secondKey != null && !"".equals(secondKey) ) {
 					int[] tempBt;
 					int x, y, z;
 					tempBt = intByte;
@@ -232,7 +232,7 @@ public class DES {
 					}
 					decByte = tempBt;
 				} else {
-					if (firstKey != null && firstKey != "") {
+					if (firstKey != null && !"".equals(firstKey) ) {
 						int[] tempBt;
 						int x, y, z;
 						tempBt = intByte;
