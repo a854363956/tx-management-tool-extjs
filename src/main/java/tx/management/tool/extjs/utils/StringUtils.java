@@ -16,7 +16,7 @@ import java.util.UUID;
 
 import tx.database.common.utils.string.SqlStringUtils;
 
-public class StringUtils {
+public class StringUtils extends SqlStringUtils {
 	private static String cmd = "^[a-zA-Z0-9_]+:[a-zA-Z0-9_]+#[a-zA-Z0-9_]+$";
 	private static String field="^[a-zA-Z0-9_]+$";
 	private static String number="^[0-9]+$";
