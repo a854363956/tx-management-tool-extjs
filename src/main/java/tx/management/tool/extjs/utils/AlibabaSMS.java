@@ -30,6 +30,18 @@ public class AlibabaSMS {
 		DefaultProfile.addEndpoint("cn-hangzhou", "cn-hangzhou", product, domain);
 	    acsClient = new DefaultAcsClient(profile);
 	}
+	
+	/**
+	 * 修改短信发送的key
+	 * @param accessKeyId
+	 * @param accessKeySecret
+	 * @throws ClientException
+	 */
+	public void updateAlibabaSMS(String accessKeyId,String accessKeySecret) throws ClientException {
+		IClientProfile profile = DefaultProfile.getProfile("cn-hangzhou", accessKeyId,accessKeySecret);
+		DefaultProfile.addEndpoint("cn-hangzhou", "cn-hangzhou", product, domain);
+	    acsClient = new DefaultAcsClient(profile);
+	}
 	/**
 	 * 如果返回true表示表示发送成功,如果返回false表示发送失败
 	 * @param autograph      短信签名
