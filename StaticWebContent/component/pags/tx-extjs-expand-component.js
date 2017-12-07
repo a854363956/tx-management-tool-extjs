@@ -612,6 +612,83 @@
 					}
 				});
 			},
+			toColumns:function(datas){
+				var result_ = new Array();
+				result_.push({
+					header: '', 
+					xtype: 'rownumberer',  
+					align: 'center', 
+					sortable: false 
+				});
+				for(var i=0;i<datas.length;i++){
+					var column={
+							text:datas[i].label || datas[i].name,
+					}
+					var width = datas[i].width || null;
+					if(width != null){
+						if(/^[0-9]+$/.test(width)){
+							column.width =window.parseInt(width);
+						}else{
+							column.width =width;
+						}
+					}
+					var exatt = datas[i].exatt || null;
+					if(exatt != null){
+						exatt=eval("var ______exatt="+exatt+"\n\t ______exatt");
+						for(var att in exatt){
+							column[att]=exatt[att];
+						}
+					}
+					var isready = datas[i].isready || null
+					var editor =datas[i].editor || null;
+					if(isready!=null){
+						isready = isready =="0"?true:false;
+						if(isready==false){
+							if(editor!=null){
+								if(editor=="3"){
+									column.editor={
+											xtype:"textfield",
+									}
+								}else if(editor=="1"){
+									column.editor={
+											xtype:"datetimefield",
+									}
+								}else if(editor=="0"){
+									column.editor={
+											xtype:"datefield",
+									}
+								}
+							}
+						}
+						//column.editor=isready?"":column.editor;
+					}
+					if(editor == "1"){
+						column.renderer=function(value){
+							var v = value || null;
+							if(v==null){
+								return "";
+							}else{
+								return Ext.util.Format.date(new Date(value),"Y-m-d H:i:s");
+							}
+				        }
+					}else if(editor == "0"){
+						column.renderer=function(value){
+							var v =value || null;
+							if(v == null){
+								return "";
+							}else{
+								return Ext.util.Format.date(new Date(value),"Y-m-d");
+							}
+				        }
+					}
+					
+					var hide = datas[i].isshow || false;
+					column.hidden =  datas[i].isshow  =="0"? false:true;
+					column.dataIndex=datas[i].name;
+					result_.push(column);
+				}
+				return result_;
+			},
 			/**
 			 * 根据配置获取TxGrid的列的信息
 			 * 	sqlid     sqlid
@@ -626,80 +703,7 @@
 					dom:null,
 					callback:function(result){
 						var datas   = Ext.JSON.decode(result.datas);
-						var result_ = new Array();
-						result_.push({
-							header: '', 
-							xtype: 'rownumberer',  
-							align: 'center', 
-							sortable: false 
-						});
-						for(var i=0;i<datas.length;i++){
-							var column={
-									text:datas[i].label || datas[i].name,
-							}
-							var width = datas[i].width || null;
-							if(width != null){
-								if(/^[0-9]+$/.test(width)){
-									column.width =window.parseInt(width);
-								}else{
-									column.width =width;
-								}
-							}
-							var exatt = datas[i].exatt || null;
-							if(exatt != null){
-								exatt=eval("var ______exatt="+exatt+"\n\t ______exatt");
-								for(var att in exatt){
-									column[att]=exatt[att];
-								}
-							}
-							var isready = datas[i].isready || null
-							var editor =datas[i].editor || null;
-							if(isready!=null){
-								isready = isready =="0"?true:false;
-								if(isready==false){
-									if(editor!=null){
-										if(editor=="3"){
-											column.editor={
-													xtype:"textfield",
-											}
-										}else if(editor=="1"){
-											column.editor={
-													xtype:"datetimefield",
-											}
-										}else if(editor=="0"){
-											column.editor={
-													xtype:"datefield",
-											}
-										}
-									}
-								}
-								//column.editor=isready?"":column.editor;
-							}
-							if(editor == "1"){
-								column.renderer=function(value){
-									var v = value || null;
-									if(v==null){
-										return "";
-									}else{
-										return Ext.util.Format.date(new Date(value),"Y-m-d H:i:s");
-									}
-						        }
-							}else if(editor == "0"){
-								column.renderer=function(value){
-									var v =value || null;
-									if(v == null){
-										return "";
-									}else{
-										return Ext.util.Format.date(new Date(value),"Y-m-d");
-									}
-						        }
-							}
-							
-							var hide = datas[i].isshow || false;
-							column.hidden =  datas[i].isshow  =="0"? false:true;
-							column.dataIndex=datas[i].name;
-							result_.push(column);
-						}
+						var result_ = Tx.auto.TxGrid.toColumns(datas);
 						var callback = obj.callback || function(){};
 						callback(result_);
 					}

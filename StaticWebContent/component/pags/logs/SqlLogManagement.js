@@ -3,7 +3,14 @@
  * @returns
  */
 (function(){
+	//@Grid("7fa2f7833a064aa6ad22248b1b3e066f")
 	var grid;
+	grid.addListener('rowdblclick', function(self, record, element, rowIndex, e, eOpts){
+		record.data.createdate = Ext.util.Format.date(new Date(record.data.createdate),"Y-m-d H:i:s");
+		Ext.getCmp("__sql_logs_program_maintenance_page_form_json").getForm().setValues(record.data);
+		addData.show();
+	});
+	
 	var center = Ext.Panel.create({
 		region : 'center',
 		layout:{  
@@ -14,7 +21,7 @@
 	    defaults:{  
 	       flex:1  
 	    },  
-		items:[]
+		items:[grid]
 	});
 	var cmp = Ext.Panel.create({
 		region : 'center',
@@ -107,7 +114,7 @@
 	    	}
 	   }]
 	});
-	Tx.auto.TxGrid.getGrid({
+/*	Tx.auto.TxGrid.getGrid({
 		sqlid:"7fa2f7833a064aa6ad22248b1b3e066f",
 		queryname:"threadid",
 		callback:function(printgrid){
@@ -119,6 +126,9 @@
 			});
 			center.add(printgrid);
 		}
-	});
+	});*/
+	cmp._destroy=function(){
+		addData.destroy();
+	}
 	return cmp;
 })();
