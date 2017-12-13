@@ -46,7 +46,6 @@ public class QuerySendDetailsResponseUnmarshaller {
 			smsSendDetailDTO.setSendDate(context.stringValue("QuerySendDetailsResponse.SmsSendDetailDTOs["+ i +"].SendDate"));
 			smsSendDetailDTO.setReceiveDate(context.stringValue("QuerySendDetailsResponse.SmsSendDetailDTOs["+ i +"].ReceiveDate"));
 			smsSendDetailDTO.setOutId(context.stringValue("QuerySendDetailsResponse.SmsSendDetailDTOs["+ i +"].OutId"));
-
 			smsSendDetailDTOs.add(smsSendDetailDTO);
 		}
 		querySendDetailsResponse.setSmsSendDetailDTOs(smsSendDetailDTOs);

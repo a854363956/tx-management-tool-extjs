@@ -7,7 +7,6 @@ import java.lang.reflect.Method;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -227,9 +226,9 @@ public class BaseSystemBusiness {
 	 * 对菜单进行授权操作
 	 * @param re
 	 * @return
-	 * @throws SQLException
+	 * @throws Exception 
 	 */
-	public ResponseEntitys fnAuthorizeMmenu(RequestEntitys re) throws SQLException {
+	public ResponseEntitys fnAuthorizeMmenu(RequestEntitys re) throws Exception {
 		Transactional t = null; 
 		try {
 			t=txSessionFactory.getTxSession().openTransactional();
@@ -291,10 +290,9 @@ public class BaseSystemBusiness {
 	 * 删除菜单节点
 	 * @param re
 	 * @return
-	 * @throws TxInvokingException
-	 * @throws SQLException
+	 * @throws Exception 
 	 */
-	public ResponseEntitys fnDeleteMenu(RequestEntitys re) throws TxInvokingException, SQLException {
+	public ResponseEntitys fnDeleteMenu(RequestEntitys re) throws Exception {
 		Transactional t = null; 
 		try {
 			t=txSessionFactory.getTxSession().openTransactional();
@@ -330,9 +328,9 @@ public class BaseSystemBusiness {
 	 * 添加角色信息
 	 * @param re
 	 * @return
-	 * @throws SQLException 
+	 * @throws Exception 
 	 */
-	public ResponseEntitys fnAddRole(RequestEntitys re) throws SQLException {
+	public ResponseEntitys fnAddRole(RequestEntitys re) throws Exception {
 		Transactional t = null;
 		int i=0;
 		try {
@@ -398,9 +396,9 @@ public class BaseSystemBusiness {
 	 * 保存修改的菜单节点对象
 	 * @param re
 	 * @return
-	 * @throws SQLException 
+	 * @throws Exception 
 	 */
-	public ResponseEntitys fnSaveMenuNode(RequestEntitys re) throws SQLException {
+	public ResponseEntitys fnSaveMenuNode(RequestEntitys re) throws Exception {
 		Transactional t =null ;
 		try {
 			t=txSessionFactory.getTxSession().openTransactional();
@@ -437,9 +435,9 @@ public class BaseSystemBusiness {
 	 * 创建节点菜单
 	 * @param re
 	 * @return
-	 * @throws SQLException
+	 * @throws Exception 
 	 */
-	public ResponseEntitys fnCreateMenuNode(RequestEntitys re) throws SQLException {
+	public ResponseEntitys fnCreateMenuNode(RequestEntitys re) throws Exception {
 		Transactional t =null ;
 		try {
 			t=txSessionFactory.getTxSession().openTransactional();
@@ -747,13 +745,13 @@ public class BaseSystemBusiness {
 				Class clzz = Class.forName(bean);
 				@SuppressWarnings("unchecked")
 				Method m = clzz.getMethod(method, sqlid.getClass(),jsonData.getClass());
-				return (int) m.invoke(null, sqlid,jsonData);
+				return (Integer) m.invoke(null, sqlid,jsonData);
 			}else if(type.equalsIgnoreCase(CmdService.javascript.getValue())) {
 				throw TxInvokingException.throwTxInvokingExceptions("TX-000002");
 			}else if(type.equalsIgnoreCase(CmdService.spring.getValue())) {
 				Object beans = SpringContextUtil.getApplicationContext().getBean(bean);
 				Method m = beans.getClass().getMethod(method, sqlid.getClass(),jsonData.getClass());
-				return (int) m.invoke(beans, sqlid,jsonData);
+				return (Integer) m.invoke(beans, sqlid,jsonData);
 			}else {
 				throw TxInvokingException.throwTxInvokingExceptions("TX-000002");
 			}
@@ -976,7 +974,7 @@ public class BaseSystemBusiness {
 			re.getSession().setAttribute("key_1", json.getString("key_1"));
 			re.getSession().setAttribute("key_2", json.getString("key_2"));
 			re.getSession().setAttribute("USERINFO", result.getDatas().get(0));
-			re.getSession().setMaxInactiveInterval((int)result.getDatas().get(0).get("session_valid"));
+			re.getSession().setMaxInactiveInterval((Integer)result.getDatas().get(0).get("session_valid"));
 			sqlparames.clear();
 			sqlparames.put("userid", result.getDatas().get(0).get("id"));
 			QuerySqlResult r = txSessionFactory.getTxSession().select("select e.*  from tx_base_role_mapping g left join  tx_base_role e  on g.roleid = e.id  where g.userid =${userid}", sqlparames);

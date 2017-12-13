@@ -125,7 +125,6 @@ public class ExtJsAnnotationService extends HttpServlet{
 	public void init(ServletConfig config) throws ServletException {
 		this.config = config;
 	}
-	
 	public static String readAnnontitionFile(String filename) throws IOException {
 		String path = config.getServletContext().getResource("/WEB-INF/classes/tx/management/tool/extjs/configs/resources/templates/js/"+filename).getPath();
 		File f = new File(path);

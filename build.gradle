@@ -8,14 +8,13 @@
 
 // Apply the java-library plugin to add support for Java Library
 import org.gradle.plugins.ide.eclipse.model.Facet
-
 apply plugin: 'maven'
 apply plugin: 'java'
 apply plugin: 'war'
 apply plugin: 'eclipse-wtp'
 
 
-sourceCompatibility = 1.8 
+sourceCompatibility = 1.6
 tasks.withType(JavaCompile) {    
     options.encoding = 'UTF-8'  
 } 
@@ -35,31 +34,38 @@ buildscript {
 
 }
 
+
+ext{
+	SPRINGVERSION="4.2.4.RELEASE"
+	JBPMVERSION="7.0.0.Final"
+}
 dependencies {
     compile files("../tx-database-common-utils/build/libs/tx-database-common-utils.jar")
     providedCompile 'javax.servlet:servlet-api:2.5' 
     providedRuntime 'javax.servlet:jstl:1.2'  
     providedRuntime 'javax.websocket:javax.websocket-api:1.0'
     compile(
-    		'org.springframework:spring-aop:4.2.4.RELEASE',
-            'org.springframework:spring-beans:4.2.4.RELEASE',
-            'org.springframework:spring-context:4.2.4.RELEASE',
-            'org.springframework:spring-core:4.2.4.RELEASE',
-            'org.springframework:spring-web:4.2.4.RELEASE',
-            'org.springframework:spring-test:4.2.4.RELEASE',
-            'log4j:log4j:1.2.9',
-            'com.ryantenney.log4j:redis-appender:1.0.1',
-            'commons-logging:commons-logging:1.2',
-            'com.alibaba:fastjson:1.2.32',
-            'mysql:mysql-connector-java:5.1.40',
-            'org.apache.poi:poi:3.17',
-            'org.apache.poi:poi-ooxml:3.17',
-            'com.mchange:c3p0:0.9.5.2',
-            'mysql:mysql-connector-java:5.1.38',
-            'net.sf.jasperreports:jasperreports:6.1.0',
-            'com.googlecode.log4jdbc:log4jdbc:1.2',
-            'com.aliyun:aliyun-java-sdk-core:3.2.3',
-            'javax.mail:mail:1.4.7'
+    		"org.springframework:spring-aop:${SPRINGVERSION}",
+            "org.springframework:spring-beans:${SPRINGVERSION}",
+            "org.springframework:spring-context:${SPRINGVERSION}",
+            "org.springframework:spring-core:${SPRINGVERSION}",
+            "org.springframework:spring-web:${SPRINGVERSION}",
+             //"org.springframework:spring-test:${SpringVersion}",
+            "log4j:log4j:1.2.9",
+            "com.ryantenney.log4j:redis-appender:1.0.1",
+            "commons-logging:commons-logging:1.2",
+            "com.alibaba:fastjson:1.2.32",
+            "mysql:mysql-connector-java:5.1.40",
+            "org.apache.poi:poi:3.17",
+            "org.apache.poi:poi-ooxml:3.17",
+            "com.mchange:c3p0:0.9.5.2",
+            "mysql:mysql-connector-java:5.1.38",
+            "net.sf.jasperreports:jasperreports:6.1.0",
+            "com.googlecode.log4jdbc:log4jdbc:1.2",
+            "com.aliyun:aliyun-java-sdk-core:3.2.3",
+            "javax.mail:mail:1.4.7",
+            "org.jbpm:jbpm-test:${JBPMVERSION}",
+            "org.kie:kie-api:${JBPMVERSION}"
     )
      // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
